@@ -8,9 +8,10 @@
 // https://github.com/ukos-git/igor-swnt-absorption
 
 // see AutomaticallyFindPeaks from WM's <Peak AutoFind>
-Function/Wave PeakFind(wavInput, [sorted, redimensioned, differentiate2])
+Function/Wave PeakFind(wavInput, [sorted, redimensioned, differentiate2, noiselevel, smoothingFactor, minPeakPercent, maxPeaks])
     Wave wavInput
     Variable sorted, redimensioned, differentiate2
+    Variable noiselevel, smoothingFactor, minPeakPercent, maxPeaks
 
     if (ParamIsDefault(redimensioned))
         redimensioned = 0
@@ -22,10 +23,8 @@ Function/Wave PeakFind(wavInput, [sorted, redimensioned, differentiate2])
         differentiate2 = 0
     endif
 
-    Variable maxPeaks, minPeakPercent
     Variable pBegin, pEnd
     Variable/C estimates
-    Variable noiselevel, smoothingFactor
 
     Variable numColumns
 
@@ -65,12 +64,21 @@ Function/Wave PeakFind(wavInput, [sorted, redimensioned, differentiate2])
     pBegin = 0
     pEnd = DimSize(wavYdata, 0) - 1
 
-    minPeakPercent = 5
-    maxPeaks = 50
-
+    if(ParamIsDefault(maxPeaks))
+        maxPeaks = 10
+    endif
+    if(ParamIsDefault(minPeakPercent))
+        minPeakPercent = 90
+    endif
     estimates = EstPeakNoiseAndSmfact(wavYdata, pBegin, pEnd)
-    noiselevel = real(estimates)
-    smoothingFactor = imag(estimates)
+    if(ParamIsDefault(noiselevel))
+		noiselevel = 1
+    endif
+	noiselevel *= real(estimates)
+    if(ParamIsDefault(smoothingFactor))
+        smoothingFactor = 1
+    endif
+	smoothingFactor *= imag(estimates)
     if(!(noiselevel>0))
         noiselevel = 0.01
     endif
