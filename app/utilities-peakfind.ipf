@@ -8,8 +8,8 @@
 // https://github.com/ukos-git/igor-swnt-absorption
 
 // see AutomaticallyFindPeaks from WM's <Peak AutoFind>
-Function/Wave PeakFind(wavInput, [sorted, redimensioned, differentiate2, noiselevel, smoothingFactor, minPeakPercent, maxPeaks])
-    Wave wavInput
+Function/Wave PeakFind(wavInput, [wvXdata, sorted, redimensioned, differentiate2, noiselevel, smoothingFactor, minPeakPercent, maxPeaks])
+    Wave wavInput, wvXdata
     Variable sorted, redimensioned, differentiate2
     Variable noiselevel, smoothingFactor, minPeakPercent, maxPeaks
 
@@ -32,22 +32,23 @@ Function/Wave PeakFind(wavInput, [sorted, redimensioned, differentiate2, noisele
     String newName
 
     numColumns = Dimsize(wavInput, 1)
-    if (numColumns == 0)
-        Wave wavXdata = $("_calculated_")
+    if(numColumns == 0)
+        if(ParamIsDefault(wvXdata))
+            Wave wvXdata = $("_calculated_")
+        endif
         if(differentiate2)
             wave wavYdata = Differentiate2Wave(wavInput, 10)
             wavYdata *= -1
         else
             Wave wavYdata = wavInput
         endif
-    elseif(numColumns == 3)
+    elseif(numColumns > 1)
         Duplicate/FREE/R=[][0] wavInput wavYdata
-        Duplicate/FREE/R=[][1] wavInput wavXdata
-        Redimension/N=(-1,0) wavYdata, wavXdata
+        Duplicate/FREE/R=[][1] wavInput wvXdata
+        Redimension/N=(-1,0) wavYdata, wvXdata
     else
         abort
     endif
-
 
     Make/FREE/N=(maxPeaks,7) wavOutput
 
@@ -109,7 +110,7 @@ Function/Wave PeakFind(wavInput, [sorted, redimensioned, differentiate2, noisele
         endif
 
         // The x values in W_AutoPeakInfo are still actually points, not X
-        AdjustAutoPeakInfoForX(W_AutoPeakInfo, wavYdata, wavXdata)
+        AdjustAutoPeakInfoForX(W_AutoPeakInfo, wavYdata, wvXdata)
         wavOutput[][%wavelength]     = W_AutoPeakInfo[p][0]
 
         // save all data from WM procedure
