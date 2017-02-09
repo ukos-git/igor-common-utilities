@@ -9,204 +9,204 @@
 
 // see AutomaticallyFindPeaks from WM's <Peak AutoFind>
 Function/Wave PeakFind(wavInput, [wvXdata, sorted, redimensioned, differentiate2, noiselevel, smoothingFactor, minPeakPercent, maxPeaks])
-    Wave wavInput, wvXdata
-    Variable sorted, redimensioned, differentiate2
-    Variable noiselevel, smoothingFactor, minPeakPercent, maxPeaks
+	Wave wavInput, wvXdata
+	Variable sorted, redimensioned, differentiate2
+	Variable noiselevel, smoothingFactor, minPeakPercent, maxPeaks
 
-    if (ParamIsDefault(redimensioned))
-        redimensioned = 0
-    endif
-    if (ParamIsDefault(sorted))
-        sorted = 0
-    endif
-    if (ParamIsDefault(differentiate2))
-        differentiate2 = 0
-    endif
+	if (ParamIsDefault(redimensioned))
+		redimensioned = 0
+	endif
+	if (ParamIsDefault(sorted))
+		sorted = 0
+	endif
+	if (ParamIsDefault(differentiate2))
+		differentiate2 = 0
+	endif
 
-    Variable pBegin, pEnd
-    Variable/C estimates
+	Variable pBegin, pEnd
+	Variable/C estimates
 
-    Variable numColumns
+	Variable numColumns
 
-    Variable peaksFound
-    String newName
+	Variable peaksFound
+	String newName
 
-    numColumns = Dimsize(wavInput, 1)
-    if(numColumns == 0)
-        if(ParamIsDefault(wvXdata))
-            Wave wvXdata = $("_calculated_")
-        endif
-        if(differentiate2)
-            wave wavYdata = Differentiate2Wave(wavInput, 10)
-            wavYdata *= -1
-        else
-            Wave wavYdata = wavInput
-        endif
-    elseif(numColumns > 1)
-        Duplicate/FREE/R=[][0] wavInput wavYdata
-        Duplicate/FREE/R=[][1] wavInput wvXdata
-        Redimension/N=(-1,0) wavYdata, wvXdata
-    else
-        abort
-    endif
+	numColumns = Dimsize(wavInput, 1)
+	if(numColumns == 0)
+		if(ParamIsDefault(wvXdata))
+			Wave wvXdata = $("_calculated_")
+		endif
+		if(differentiate2)
+			wave wavYdata = Differentiate2Wave(wavInput, 10)
+			wavYdata *= -1
+		else
+			Wave wavYdata = wavInput
+		endif
+	elseif(numColumns > 1)
+		Duplicate/FREE/R=[][0] wavInput wavYdata
+		Duplicate/FREE/R=[][1] wavInput wvXdata
+		Redimension/N=(-1,0) wavYdata, wvXdata
+	else
+		abort
+	endif
 
-    Make/FREE/N=(maxPeaks,7) wavOutput
+	Make/FREE/N=(maxPeaks,7) wavOutput
 
-    // label columns of wave for readability
-    SetDimLabel 1, 0, wavelength, wavOutput
-    SetDimLabel 1, 1, height, wavOutput
-    SetDimLabel 1, 2, width, wavOutput
-    SetDimLabel 1, 3, positionY, wavOutput
-    SetDimLabel 1, 4, positionX, wavOutput
-    SetDimLabel 1, 5, widthL, wavOutput // from WM: somewhat free width left and right
-    SetDimLabel 1, 6, widthR, wavOutput
+	// label columns of wave for readability
+	SetDimLabel 1, 0, wavelength, wavOutput
+	SetDimLabel 1, 1, height, wavOutput
+	SetDimLabel 1, 2, width, wavOutput
+	SetDimLabel 1, 3, positionY, wavOutput
+	SetDimLabel 1, 4, positionX, wavOutput
+	SetDimLabel 1, 5, widthL, wavOutput // from WM: somewhat free width left and right
+	SetDimLabel 1, 6, widthR, wavOutput
 
-    // input parameters for WM's AutoFindPeaksNew
-    pBegin = 0
-    pEnd = DimSize(wavYdata, 0) - 1
+	// input parameters for WM's AutoFindPeaksNew
+	pBegin = 0
+	pEnd = DimSize(wavYdata, 0) - 1
 
-    if(ParamIsDefault(maxPeaks))
-        maxPeaks = 10
-    endif
-    if(ParamIsDefault(minPeakPercent))
-        minPeakPercent = 90
-    endif
-    estimates = EstPeakNoiseAndSmfact(wavYdata, pBegin, pEnd)
-    if(ParamIsDefault(noiselevel))
+	if(ParamIsDefault(maxPeaks))
+		maxPeaks = 10
+	endif
+	if(ParamIsDefault(minPeakPercent))
+		minPeakPercent = 90
+	endif
+	estimates = EstPeakNoiseAndSmfact(wavYdata, pBegin, pEnd)
+	if(ParamIsDefault(noiselevel))
 		noiselevel = 1
-    endif
+	endif
 	noiselevel *= real(estimates)
-    if(ParamIsDefault(smoothingFactor))
-        smoothingFactor = 1
-    endif
+	if(ParamIsDefault(smoothingFactor))
+		smoothingFactor = 1
+	endif
 	smoothingFactor *= imag(estimates)
-    if(!(noiselevel>0))
-        noiselevel = 0.01
-    endif
+	if(!(noiselevel>0))
+		noiselevel = 0.01
+	endif
 
-    peaksFound = AutoFindPeaksNew(wavYdata, pBegin, pEnd, noiseLevel, smoothingFactor, maxPeaks)
-    WAVE W_AutoPeakInfo // output of AutoFindPeaksNew
+	peaksFound = AutoFindPeaksNew(wavYdata, pBegin, pEnd, noiseLevel, smoothingFactor, maxPeaks)
+	WAVE W_AutoPeakInfo // output of AutoFindPeaksNew
 
-    // Remove too-small peaks
-    if(peaksFound > 0)
-        peaksFound = TrimAmpAutoPeakInfo(W_AutoPeakInfo,minPeakPercent/100)
-    endif
+	// Remove too-small peaks
+	if(peaksFound > 0)
+		peaksFound = TrimAmpAutoPeakInfo(W_AutoPeakInfo,minPeakPercent/100)
+	endif
 
-    // process peaks
-    if(peaksFound > 0)
-        // Redimension to number of peaks
-        Redimension/N=(peaksFound, -1) wavOutput
+	// process peaks
+	if(peaksFound > 0)
+		// Redimension to number of peaks
+		Redimension/N=(peaksFound, -1) wavOutput
 
-        // save peak positions in input wave
-        wavOutput[][%positionX] = W_AutoPeakInfo[p][0]
-        if(differentiate2)
-            if (numColumns == 0)
-                wavOutput[][%positionY] = wavInput[wavOutput[p][%positionX]]
-            elseif(numColumns == 3)
-                wavOutput[][%positionY] = wavInput[wavOutput[p][%positionX]][0]
-            endif
-        else
-            wavOutput[][%positionY] = wavYdata[wavOutput[p][%positionX]]
-        endif
+		// save peak positions in input wave
+		wavOutput[][%positionX] = W_AutoPeakInfo[p][0]
+		if(differentiate2)
+			if (numColumns == 0)
+				wavOutput[][%positionY] = wavInput[wavOutput[p][%positionX]]
+			elseif(numColumns == 3)
+				wavOutput[][%positionY] = wavInput[wavOutput[p][%positionX]][0]
+			endif
+		else
+			wavOutput[][%positionY] = wavYdata[wavOutput[p][%positionX]]
+		endif
 
-        // The x values in W_AutoPeakInfo are still actually points, not X
-        AdjustAutoPeakInfoForX(W_AutoPeakInfo, wavYdata, wvXdata)
-        wavOutput[][%wavelength]     = W_AutoPeakInfo[p][0]
+		// The x values in W_AutoPeakInfo are still actually points, not X
+		AdjustAutoPeakInfoForX(W_AutoPeakInfo, wavYdata, wvXdata)
+		wavOutput[][%wavelength]	 = W_AutoPeakInfo[p][0]
 
-        // save all data from WM procedure
-        wavOutput[][%width]     = W_AutoPeakInfo[p][1]
-        wavOutput[][%height]     = W_AutoPeakInfo[p][2]
-        wavOutput[][%widthL]     = W_AutoPeakInfo[p][3]
-        wavOutput[][%widthR]     = W_AutoPeakInfo[p][4]
-    endif
+		// save all data from WM procedure
+		wavOutput[][%width]	 = W_AutoPeakInfo[p][1]
+		wavOutput[][%height]	 = W_AutoPeakInfo[p][2]
+		wavOutput[][%widthL]	 = W_AutoPeakInfo[p][3]
+		wavOutput[][%widthR]	 = W_AutoPeakInfo[p][4]
+	endif
 
-    if((sorted) && (peaksFound > 0)) // sort is not multidimensional aware
-        Make/FREE/N=(Dimsize(wavOutput, 0)) zero = wavOutput[p][0]
-        Make/FREE/N=(Dimsize(wavOutput, 0)) one = wavOutput[p][1]
-        Make/FREE/N=(Dimsize(wavOutput, 0)) two = wavOutput[p][2]
-        Make/FREE/N=(Dimsize(wavOutput, 0)) three = wavOutput[p][3]
-        Make/FREE/N=(Dimsize(wavOutput, 0)) four = wavOutput[p][4]
-        Make/FREE/N=(Dimsize(wavOutput, 0)) five = wavOutput[p][5]
-        Make/FREE/N=(Dimsize(wavOutput, 0)) six = wavOutput[p][6]
+	if((sorted) && (peaksFound > 0)) // sort is not multidimensional aware
+		Make/FREE/N=(Dimsize(wavOutput, 0)) zero = wavOutput[p][0]
+		Make/FREE/N=(Dimsize(wavOutput, 0)) one = wavOutput[p][1]
+		Make/FREE/N=(Dimsize(wavOutput, 0)) two = wavOutput[p][2]
+		Make/FREE/N=(Dimsize(wavOutput, 0)) three = wavOutput[p][3]
+		Make/FREE/N=(Dimsize(wavOutput, 0)) four = wavOutput[p][4]
+		Make/FREE/N=(Dimsize(wavOutput, 0)) five = wavOutput[p][5]
+		Make/FREE/N=(Dimsize(wavOutput, 0)) six = wavOutput[p][6]
 
-        Sort zero, zero, one, two, three, four, five, six
-        wavOutput[][0] = zero[p]
-        wavOutput[][1] = one[p]
-        wavOutput[][2] = two[p]
-        wavOutput[][3] = three[p]
-        wavOutput[][4] = four[p]
-        wavOutput[][5] = five[p]
-        wavOutput[][6] = six[p]
-    endif
+		Sort zero, zero, one, two, three, four, five, six
+		wavOutput[][0] = zero[p]
+		wavOutput[][1] = one[p]
+		wavOutput[][2] = two[p]
+		wavOutput[][3] = three[p]
+		wavOutput[][4] = four[p]
+		wavOutput[][5] = five[p]
+		wavOutput[][6] = six[p]
+	endif
 
-    if (redimensioned)
-        Redimension/N=(-1,4) wavOutput
-    endif
+	if (redimensioned)
+		Redimension/N=(-1,4) wavOutput
+	endif
 
-    if(differentiate2)
-        wavYdata *= -1
-    endif
+	if(differentiate2)
+		wavYdata *= -1
+	endif
 
-    return wavOutput
+	return wavOutput
 End
 
 Function/Wave Differentiate2Wave(wavInput, numSmooth)
-    Wave wavInput
-    Variable numSmooth
+	Wave wavInput
+	Variable numSmooth
 
-    // smooth and build second derivative
-    Wave wavFirst  = DifferentiateWave(wavInput, numSmooth, 0)
-    Wave wavSecond = DifferentiateWave(wavFirst, numSmooth, 0)
+	// smooth and build second derivative
+	Wave wavFirst  = DifferentiateWave(wavInput, numSmooth, 0)
+	Wave wavSecond = DifferentiateWave(wavFirst, numSmooth, 0)
 
-    return wavSecond
+	return wavSecond
 End
 
 Function/WAVE DifferentiateWave(wavInput, numSmooth, type)
-    Wave wavInput
-    Variable numSmooth, type
+	Wave wavInput
+	Variable numSmooth, type
 
-    String newName
+	String newName
 
-    Duplicate/FREE wavInput, wavTemp
+	Duplicate/FREE wavInput, wavTemp
 
-    // smooth before
-    Wave wavSmooth = SmoothWave(wavInput, numSmooth)
+	// smooth before
+	Wave wavSmooth = SmoothWave(wavInput, numSmooth)
 
-    if (Dimsize(wavInput, 1) == 3)
-        Duplicate/O/R=[][0]/FREE wavSmooth intensity
-        Duplicate/O/R=[][1]/FREE wavSmooth wavelength
-        Duplicate/O/R=[][0]/FREE wavSmooth differentiated
-        Redimension/N=(-1,0) intensity, wavelength, differentiated
-        Differentiate/METH=(type) intensity/D=differentiated/X=wavelength
-        wavTemp[][0] = differentiated[p]
-    else
-        Differentiate/METH=(type) wavSmooth/D=wavTemp
-    endif
+	if (Dimsize(wavInput, 1) == 3)
+		Duplicate/O/R=[][0]/FREE wavSmooth intensity
+		Duplicate/O/R=[][1]/FREE wavSmooth wavelength
+		Duplicate/O/R=[][0]/FREE wavSmooth differentiated
+		Redimension/N=(-1,0) intensity, wavelength, differentiated
+		Differentiate/METH=(type) intensity/D=differentiated/X=wavelength
+		wavTemp[][0] = differentiated[p]
+	else
+		Differentiate/METH=(type) wavSmooth/D=wavTemp
+	endif
 
-    // smooth after
-    Wave wavOutput = SmoothWave(wavTemp, 0)
+	// smooth after
+	Wave wavOutput = SmoothWave(wavTemp, 0)
 
-    return wavOutput
+	return wavOutput
 End
 
 Function/Wave SmoothWave(wavInput, numSmooth)
-    Wave wavInput
-    Variable numSmooth
+	Wave wavInput
+	Variable numSmooth
 
-    String newName
+	String newName
 
-    Duplicate/FREE wavInput wavOutput
+	Duplicate/FREE wavInput wavOutput
 
-    if (numSmooth>0)
-        if (Dimsize(wavInput, 1) == 3)
-            Duplicate/R=[][0]/FREE wavInput intensity
-            Redimension/N=(-1,0) intensity
-            Smooth numSmooth, intensity
-            wavOutput[][0] = intensity[p]
-        else
-            Smooth numSmooth, wavOutput
-        endif
-    endif
+	if (numSmooth>0)
+		if (Dimsize(wavInput, 1) == 3)
+			Duplicate/R=[][0]/FREE wavInput intensity
+			Redimension/N=(-1,0) intensity
+			Smooth numSmooth, intensity
+			wavOutput[][0] = intensity[p]
+		else
+			Smooth numSmooth, wavOutput
+		endif
+	endif
 
-    return wavOutput
+	return wavOutput
 End
