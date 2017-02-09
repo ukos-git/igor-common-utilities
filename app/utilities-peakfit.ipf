@@ -222,3 +222,269 @@ static Function/WAVE RemoveFitErrors(wvPeakParam)
 
 	return wv
 End
+
+Function/WAVE SmoothBackground(wv, [fraction])
+	WAVE wv
+	variable fraction
+
+	variable numSmooth
+
+	if(ParamIsDefault(fraction))
+		fraction = 2^5
+	endif
+
+	Duplicate/FREE wv smoothed
+	numSmooth = DimSize(smoothed, 0) / fraction
+	Smooth/M=0/MPCT=50 numSmooth, smoothed
+	Loess/Z/SMTH=0.25 srcWave=smoothed
+
+	return smoothed
+End
+
+// http://www.igorexchange.com/node/6824
+//
+// Akima.ipf: Routines to implement Akima-spline fitting, based on
+// H. Akima, Journ. ACM, Vol 17, No 4, 1970 p 589-602
+// M. Bongard, 11/17/09
+//
+// used functions from M. Bongard: CalcIota, CalcEndPoints, Akima
+ThreadSafe static Function CalcIota(knotX, knotY[, dWave])
+	WAVE knotX // knot X locations
+	WAVE knotY // knot Y locations
+	WAVE dWave // Destination wave reference for iotas
+
+	if(!WaveExists(knotX) || !WaveExists(knotY))
+		Print "CalcIota: ERROR -- requisite waves do not exist! Aborting..."
+		return -1
+	endif
+
+	if(numpnts(knotX) != numpnts(knotY))
+		Print "CalcIota: ERROR -- knot waves must have same number of points! Aborting..."
+		return -1
+	endif
+
+	Variable numKnots = numpnts(knotX)
+
+	if(numKnots < 5)
+		Print "CalcIota: ERROR -- Akima spline algorithm requires at least 5 knots. Aborting..."
+		return -1
+	endif
+
+	// Make intermediate ai, bi, mi arrays
+	Make/D/FREE/N=(numKnots + 4)  kX, kY
+
+	Variable i, j
+	for(i = 2, j = 0; j < numKnots; i += 1, j += 1)
+		kX[i] = knotX[j]
+		kY[i] = knotY[j]
+	endfor
+
+	// Handle end-point extrapolation
+	Make/D/FREE/N=5 endX, endY
+	// RHS: end points are last three in dataset
+	Variable endStartPt
+	// RHS
+	endStartPt = numPnts(kX) - 5
+	endX = kX[p + endStartPt]
+	endY = kY[p + endStartPt]
+
+	CalcEndPoints(endX, endY)
+
+	kX[numpnts(kX)-2] = endX[3]
+	kX[numpnts(kX)-1] = endX[4]
+	kY[numpnts(kX)-2] = endY[3]
+	kY[numpnts(kX)-1] = endY[4]
+
+	// LHS: end points are first three in dataset, but reversed in ordering
+	// (i.e. point 3 in Akima's notation == index 0)
+	endX = 0
+	endY = 0
+
+	for(i = 0, j = 2; i < 3; i += 1, j -= 1)
+		endX[j] = knotX[i]
+		endY[j] = knotY[i]
+	endfor
+
+	CalcEndPoints(endX, endY)
+
+	kX[1] = endX[3]
+	kX[0] = endX[4]
+	kY[1] = endY[3]
+	kY[0] = endY[4]
+
+	// kX, kY are now properly populated, along with all necessary extrapolated endpoints
+	// computed as specified in Akima1970
+
+	Make/D/FREE/N=(numKnots + 4 - 1)  mK
+	mK = (kY[p + 1] - kY[p]) / (kX[p + 1] - kX[p])
+
+	Make/O/N=(numKnots) knotIota
+
+	Variable denom, m1,m2,m3,m4
+	for(i = 2, j = 0; j < numKnots; i += 1, j += 1)
+		m1 = mK[i - 2]
+		m2 = mK[i - 1]
+		m3 = mK[i]
+		m4 = mK[i + 1]
+
+		denom = abs(m4 - m3) + abs(m2 - m1)
+		if(denom == 0)
+			knotIota[j] = 0.5 * (m2 + m3)
+			continue
+		endif
+
+		knotIota[j] = ( abs(m4 - m3)*m2 + abs(m2 - m1)*m3 ) / denom
+	endfor
+
+	if(!ParamIsDefault(dWave))
+		// Overwrite input destination wave with new iotas
+		Duplicate/O knotIota, dWave
+		Killwaves/Z knotIota
+	endif
+End
+
+// Given: 5-point knot wave knotX, knotY, with i=[0,2] representing the last three
+// knot locations from data, compute end knots i=[3,4] appropriately.
+ThreadSafe static Function CalcEndPoints(kX, kY)
+	WAVE kX, kY // knot X,Y coordinate locations, respectively
+
+	// Sanity checks
+	if( (numPnts(kX) != numpnts(kY)) || numpnts(kX) != 5)
+		Print "CalcEndPoints: ERROR -- must have 5 points in knot wave! Aborting..."
+		return -1
+	endif
+
+	// First, compute X locations of knots, according to relations in eq. 8 of Akima1970:
+	kX[3] = kX[1] + kX[2] - kX[0]
+	kX[4] = 2*kX[2] - kX[0]
+
+	// Now all kX are known, so let's set up the line segment slope waves
+	// ai, bi, mi of eq. (12)-(14).
+	Make/N=4/FREE ai, bi, mi
+
+	ai = kX[p+1] - kX[p]
+	// ai is now determined completely
+
+	bi = kY[p + 1] - kY[p]
+	mi = bi/ai
+	// bi, mi determined on i=[0,1]
+
+	// Determine remainder of quantities by applying solutions of eq (9)
+	kY[3] = (2*mi[1] - mi[0])*(kX[3] - kX[2]) + kY[2]
+	mi[2] = (kY[3] - kY[2]) / (kX[3] - kX[2])
+
+	kY[4] = (2*mi[2] - mi[1])*(kX[4] - kX[3]) + kY[3]
+	mi[3] = (kY[4] - kY[3]) / (kX[4] - kX[3])
+End
+
+ThreadSafe static Function Akima(x, knotX, knotY, knotIota)
+	Variable x
+	WAVE knotX, knotY, knotIota
+
+	Variable i1, i2
+
+	// Find where x
+	Variable done = 0
+	i2 = -1
+	Variable numKnots = numpnts(knotX)
+	do
+		i2 += 1
+
+		if(knotX[i2] == x)
+			return knotY[i2]
+		endif
+
+		done = (knotX[i2] > x) ? 1 : 0
+
+	while(!done && (i2 < numKnots))
+	i1 = i2 - 1
+
+	Variable x1, x2, y1, y2, iota1, iota2
+	x1 = knotX[i1]
+	y1 = knotY[i1]
+	iota1 = knotIota[i1]
+
+	x2 = knotX[i2]
+	y2 = knotY[i2]
+	iota2 = knotIota[i2]
+
+	Variable p0, p1, p2, p3, tmp
+	p0 = y1
+	p1 = iota1
+	p2 = ( 3 * (y2 - y1)/(x2 - x1) - 2*iota1 - iota2 ) / (x2 - x1)
+	p3 = (iota1 + iota2 - 2 * (y2 - y1)/(x2 - x1)) / (x2 - x1)^2
+
+	tmp = x - x1
+
+	return p0 + p1 * tmp + p2 * tmp^2 + p3*tmp^3
+End
+
+Function/WAVE RemovePeaks(wv, [wvXdata, tolerance])
+	WAVE wv, wvXdata
+	variable tolerance
+
+	variable numPeaks, numPoints, i, j, k, minBarrier, maxBarrier
+
+	if(ParamIsDefault(wvXdata))
+		WAVE wvXdata = createXwave(wv)
+	endif
+	if(ParamIsDefault(tolerance))
+		tolerance = 2 // removes peak +/- 2 * FWHM
+	endif
+
+	// get peaks
+    WAVE wavMaxima = PeakFind(wv, wvXdata = wvXdata, minPeakPercent = 90, noiselevel = 1, smoothingFactor = 0.5)
+    numPeaks = Dimsize(wavMaxima, 0)
+    Make/FREE/N=(numPeaks) peaksX = wavMaxima[p][%wavelength]
+    Make/FREE/N=(numPeaks) peaksY = wavMaxima[p][%positionY]
+    Make/FREE/N=(numPeaks) peaksF = Utilities#CalculateFWHM(wavMaxima[p][%width])
+	Sort peaksX, peaksX, peaksY, peaksF
+
+	// remove peaks
+	Duplicate/FREE wv wv_nopeaks
+	Duplicate/FREE wvXdata wl_nopeaks
+	numPoints = DimSize(wv, 0)
+	j = -1
+	k = 0
+	for(i = 0; i < numPoints; i += 1)
+		if(wvXdata[i] > maxBarrier)
+			do
+				if(j == (numPeaks - 1))
+					break
+				endif
+				j += 1
+				minBarrier = peaksX[j] - tolerance * peaksF[j]
+				maxBarrier = peaksX[j] + tolerance * peaksF[j]
+			while(minBarrier < wvXdata[i])
+		endif
+		if((wvXdata[i] > minBarrier) && (wvXdata[i] < maxBarrier))
+			continue
+		endif
+		wv_nopeaks[k] = wv[i]
+		wl_nopeaks[k] = wvXdata[i]
+		k += 1
+	endfor
+	Redimension/N=(k) wv_nopeaks, wl_nopeaks
+
+	// calculate spline over removed region
+	Make/FREE knotIota
+	CalcIota(wl_nopeaks, wv_nopeaks, dWave = knotIota)
+	Duplicate/FREE wv wv_akima
+	MultiThread wv_akima = Akima(wvXdata, wl_nopeaks, wv_nopeaks, knotIota)
+
+	return wv_akima
+End
+
+static Function/WAVE CreateXwave(wv)
+	WAVE wv
+
+	variable left, delta, size
+
+	left  = DimOffset(wv, 0)
+	delta = DimDelta(wv, 0)
+	size  = DimSize(wv, 0)
+
+	Make/FREE/N=(size) xwave = left + p * delta
+
+	return xwave
+End
