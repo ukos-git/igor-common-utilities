@@ -247,7 +247,7 @@ End
 // H. Akima, Journ. ACM, Vol 17, No 4, 1970 p 589-602
 // M. Bongard, 11/17/09
 //
-// used functions from M. Bongard: CalcIota, CalcEndPoints, Akima
+// used functions from M. Bongard: CalcIota, CalcEndPoints --> CalcEndPoints5point, Akima
 ThreadSafe static Function CalcIota(knotX, knotY[, dWave])
 	WAVE knotX // knot X locations
 	WAVE knotY // knot Y locations
@@ -343,9 +343,60 @@ ThreadSafe static Function CalcIota(knotX, knotY[, dWave])
 	endif
 End
 
+ThreadSafe static Function CalcEndPoints(kX, kY, [xStart, yStart, xEnd, yEnd])
+	WAVE kX, kY // knot X,Y coordinate locations
+	variable xStart, yStart, xEnd, yEnd // manual endpoints
+
+	variable i, numPoints
+
+	numPoints = DimSize(kX, 0)
+	if(numPoints == 5)
+		return CalcEndPoints5point(kX, kY)
+	endif
+
+	if(numPoints != DimSize(kY, 0))
+		print "CalcEndPoints: Size Missmatch of coordinate waves"
+	endif
+
+	if(ParamIsDefault(xStart))
+		xStart = WaveMin(kX)
+	endif
+	if(ParamIsDefault(yStart))
+		yStart = kY[(x2pnt(kX, xStart))]
+	endif
+	if(ParamIsDefault(xEnd))
+		xEnd = WaveMax(kX)
+	endif
+	if(ParamIsDefault(yEnd))
+		yEnd = kY[(x2pnt(kX, xEnd))]
+	endif
+
+	// trim invalid endpoints
+	for(i = numPoints - 1; i > 0; i -= 1)
+		if(kX[i] > xEnd)
+			kX[i] = xEnd
+			kY[i] = yEnd
+		else
+			break
+		endif
+	endfor
+	if(numPoints != i + 1)
+		numPoints = i + 1
+		Redimension/N=(numPoints) kX, kY
+	endif
+
+	// insert valid start point
+	if(kX[0] > xStart)
+		Redimension/N=(numPoints + 1) kX
+		kX[inf, 1] = kX[(p - 1)]
+		kY[inf, 1] = kY[(p - 1)]
+		kX[0] = xStart
+		kY[0] = yStart
+	endif
+End
 // Given: 5-point knot wave knotX, knotY, with i=[0,2] representing the last three
 // knot locations from data, compute end knots i=[3,4] appropriately.
-ThreadSafe static Function CalcEndPoints(kX, kY)
+ThreadSafe static Function CalcEndPoints5point(kX, kY)
 	WAVE kX, kY // knot X,Y coordinate locations, respectively
 
 	// Sanity checks
@@ -469,6 +520,7 @@ Function/WAVE RemovePeaks(wv, [wvXdata, tolerance])
 	// calculate spline over removed region
 	Make/FREE knotIota
 	CalcIota(wl_nopeaks, wv_nopeaks, dWave = knotIota)
+	CalcEndPoints(wl_nopeaks, wv_nopeaks, xStart = wvXdata[0], yStart = wv[0], xEnd = wvXdata[(numPoints - 1)], yEnd = wv[(numPoints - 1)])
 	Duplicate/FREE wv wv_akima
 	MultiThread wv_akima = Akima(wvXdata, wl_nopeaks, wv_nopeaks, knotIota)
 
