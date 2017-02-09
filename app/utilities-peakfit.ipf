@@ -498,3 +498,20 @@ Function/WAVE RemoveSpikes(wv)
 
     return spikefree
 End
+
+Function/WAVE RemoveBackground(wv, [wvXdata])
+	WAVE wv, wvXdata
+
+	if(ParamIsDefault(wvXdata))
+		WAVE nopeaks = Utilities#RemovePeaks(wv)
+	else
+		WAVE nopeaks = Utilities#RemovePeaks(wv, wvXdata = wvXdata)
+	endif
+
+	WAVE smoothed = Utilities#SmoothBackground(nopeaks)
+
+	Duplicate/FREE smoothed, nobackground
+	nobackground = wv - smoothed
+
+	return nobackground
+End
