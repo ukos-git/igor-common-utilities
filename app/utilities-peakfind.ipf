@@ -8,10 +8,11 @@
 // https://github.com/ukos-git/igor-swnt-absorption
 
 // see AutomaticallyFindPeaks from WM's <Peak AutoFind>
-Function/Wave PeakFind(wavInput, [wvXdata, sorted, redimensioned, differentiate2, noiselevel, smoothingFactor, minPeakPercent, maxPeaks])
+Function/Wave PeakFind(wavInput, [wvXdata, sorted, redimensioned, differentiate2, noiselevel, smoothingFactor, minPeakPercent, maxPeaks, verbose])
 	Wave wavInput, wvXdata
 	Variable sorted, redimensioned, differentiate2
 	Variable noiselevel, smoothingFactor, minPeakPercent, maxPeaks
+	variable verbose
 
 	if (ParamIsDefault(redimensioned))
 		redimensioned = 0
@@ -21,6 +22,9 @@ Function/Wave PeakFind(wavInput, [wvXdata, sorted, redimensioned, differentiate2
 	endif
 	if (ParamIsDefault(differentiate2))
 		differentiate2 = 0
+	endif
+	if (ParamIsDefault(verbose))
+		verbose = 0
 	endif
 
 	Variable pBegin, pEnd
@@ -85,6 +89,13 @@ Function/Wave PeakFind(wavInput, [wvXdata, sorted, redimensioned, differentiate2
 
 	peaksFound = AutoFindPeaksNew(wavYdata, pBegin, pEnd, noiseLevel, smoothingFactor, maxPeaks)
 	WAVE W_AutoPeakInfo // output of AutoFindPeaksNew
+
+	if(verbose > 2)
+		print "== peakFind =="
+		printf "peaks: \t %d\r", peaksFound
+		printf "smooth: \t %.1f\r", smoothingFactor
+		printf "noise: \t %.4f\r", noiseLevel
+	endif
 
 	// Remove too-small peaks
 	if(peaksFound > 0)

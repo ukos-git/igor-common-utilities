@@ -54,13 +54,15 @@ Function/WAVE FitGauss(wv, [wvXdata, wvCoef, verbose])
 		wvPeakParam[i] = peakParam
 	endfor
 
-	WAVE/WAVE wvPeakParamOut = RemoveFitErrors(wvPeakParam)
+	WAVE/WAVE wvPeakParamOut = RemoveFitErrors(wvPeakParam, verbose = verbose)
 	WAVEClear wvPeakParam
 	Duplicate/FREE wvPeakParamOut, wvPeakParam
 
 	numPeaks = DimSize(wvPeakParam, 0)
 	if(verbose && (numPeaks > 0))
-		printf "method \tnr \tcenter \theight \tFWHM \t\tarea\r"
+		if(verbose > 1)
+			printf "method \tnr \tcenter \theight \tFWHM \t\tarea\r"
+		endif
 		for(i = 0; i < numPeaks; i += 1)
 			WAVE peakParam = wvPeakParam[i]
 			center = peakParam[0][0]
@@ -128,9 +130,9 @@ Function/WAVE BuildCoefWv(wv, [wvXdata, peaks, verbose, dfr])
 	// use peakFind for parameters
 	if(ParamIsDefault(peaks))
 		if(ParamIsDefault(wvXdata))
-			WAVE peaks = Utilities#PeakFind(wv)
+			WAVE peaks = Utilities#PeakFind(wv, verbose = verbose)
 		else
-			WAVE peaks = Utilities#PeakFind(wv, wvXdata = wvXdata)
+			WAVE peaks = Utilities#PeakFind(wv, wvXdata = wvXdata, verbose = verbose)
 		endif
 	endif
 
@@ -152,8 +154,7 @@ Function/WAVE BuildCoefWv(wv, [wvXdata, peaks, verbose, dfr])
 	endfor
 	SetDataFolder saveDFR
 
-	if(verbose && (numPeaks > 0))
-		printf "method \tnr \tcenter \theight \tFWHM \t\tarea\r"
+	if((verbose > 1) && (numPeaks > 0))
 		for(i = 0; i < numPeaks; i += 1)
 			WAVE coef = wvCoef[i]
 			center = peaks[i][%wavelength]
@@ -185,11 +186,16 @@ static Function/S BuildFitStringGauss(wvCoef)
 End
 
 // assumes MPFXGaussPeak style peak parameter wave
-static Function/WAVE RemoveFitErrors(wvPeakParam)
+static Function/WAVE RemoveFitErrors(wvPeakParam, [verbose])
 	WAVE/WAVE wvPeakParam
+	variable verbose
 
 	variable i, numPeaks
 	variable lastpeaklocation = 0
+
+	if(ParamIsDefault(verbose))
+		verbose = 0
+	endif
 
 	Make/FREE/N=4 error
 	Duplicate/FREE wvPeakParam wv
@@ -201,12 +207,18 @@ static Function/WAVE RemoveFitErrors(wvPeakParam)
 		error[] = (peakParam[p][1] / peakParam[p][0])^2
 		if(sqrt(sum(error)) > 0.20)
 			DeletePoints/M=0 i, 1, wv
+			if(verbose > 1)
+				print "deleted peak: too high error"
+			endif
 			continue
 		endif
 		// remove nan and inf
 		error[] = numtype(peakParam[p][1])
 		if(sum(error) > 0)
 			DeletePoints/M=0 i, 1, wv
+			if(verbose > 1)
+				print "deleted peak: nan or inf error"
+			endif
 			continue
 		endif
 		// no negative peaks
@@ -217,6 +229,9 @@ static Function/WAVE RemoveFitErrors(wvPeakParam)
 		endif
 		// no duplicates
 		if(lastpeaklocation == floor(peakParam[0][0]))
+			if(verbose > 1)
+				print "deleted peak: found duplicate. include constraints!"
+			endif
 			DeletePoints/M=0 i, 1, wv
 		endif
 		lastpeaklocation = floor(peakParam[0][0])
@@ -468,9 +483,9 @@ ThreadSafe static Function Akima(x, knotX, knotY, knotIota)
 	return p0 + p1 * tmp + p2 * tmp^2 + p3*tmp^3
 End
 
-Function/WAVE RemovePeaks(wv, [wvXdata, tolerance])
+Function/WAVE RemovePeaks(wv, [wvXdata, tolerance, verbose])
 	WAVE wv, wvXdata
-	variable tolerance
+	variable tolerance, verbose
 
 	variable numPeaks, numPoints, i, j, k, minBarrier, maxBarrier
 
@@ -480,9 +495,12 @@ Function/WAVE RemovePeaks(wv, [wvXdata, tolerance])
 	if(ParamIsDefault(tolerance))
 		tolerance = 2 // removes peak +/- 2 * FWHM
 	endif
+	if(ParamIsDefault(verbose))
+		verbose = 0
+	endif
 
 	// get peaks
-    WAVE wavMaxima = PeakFind(wv, wvXdata = wvXdata, minPeakPercent = 90, noiselevel = 1, smoothingFactor = 0.5)
+    WAVE wavMaxima = PeakFind(wv, wvXdata = wvXdata, minPeakPercent = 20, smoothingFactor = 1, verbose = verbose)
     numPeaks = Dimsize(wavMaxima, 0)
     Make/FREE/N=(numPeaks) peaksX = wavMaxima[p][%wavelength]
     Make/FREE/N=(numPeaks) peaksY = wavMaxima[p][%positionY]
