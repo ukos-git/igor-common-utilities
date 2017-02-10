@@ -95,7 +95,7 @@ Function CalculateFWHM(width)
 	return width * twoSqrtLn2
 End
 
-static Function KillWaveOfWaves(wv)
+Function KillWaveOfWaves(wv)
 	WAVE/WAVE wv
 
 	variable i, numItems
