@@ -189,6 +189,7 @@ static Function/WAVE RemoveFitErrors(wvPeakParam)
 	WAVE/WAVE wvPeakParam
 
 	variable i, numPeaks
+	variable lastpeaklocation = 0
 
 	Make/FREE/N=4 error
 	Duplicate/FREE wvPeakParam wv
@@ -198,7 +199,7 @@ static Function/WAVE RemoveFitErrors(wvPeakParam)
 		WAVE peakParam = wvPeakParam[i]
 		// remove peaks when error too high
 		error[] = (peakParam[p][1] / peakParam[p][0])^2
-		if(sqrt(sum(error)) > 0.10)
+		if(sqrt(sum(error)) > 0.20)
 			DeletePoints/M=0 i, 1, wv
 			continue
 		endif
@@ -214,10 +215,11 @@ static Function/WAVE RemoveFitErrors(wvPeakParam)
 			DeletePoints/M=0 i, 1, wv
 			continue
 		endif
-		if(peakParam[0][0] < 0)
-			print peakParam[0][0], peakParam[0][1]
-			print error
+		// no duplicates
+		if(lastpeaklocation == floor(peakParam[0][0]))
+			DeletePoints/M=0 i, 1, wv
 		endif
+		lastpeaklocation = floor(peakParam[0][0])
 	endfor
 
 	return wv
