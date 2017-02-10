@@ -88,6 +88,43 @@ Function/WAVE FitGauss(wv, [wvXdata, wvCoef, verbose])
 	return wvPeakParam
 End
 
+Function/WAVE CreateFitCurve(wvPeakParam, xMin, xMax, size)
+	WAVE/WAVE wvPeakParam
+	variable xMin, xMax, size
+
+	variable numPeaks, i, step
+
+	Make/N=(size)/FREE wv
+	SetScale/I x, xMin, xMax, wv
+	step = (xMax - xMin) / (size)
+	Make/N=(size)/FREE wvXdata = xMin + p * step
+
+	numPeaks = DimSize(wvPeakParam, 0)
+	for(i = 0; i < numPeaks; i += 1)
+		WAVE peakParam = wvPeakParam[i]
+		WAVE coef = PeakParamToGauss(peakParam)
+		Make/FREE/N=(size) singlePeak
+		MPFXGaussPeak(coef, singlePeak, wvXdata)
+		wv += singlePeak
+	endfor
+
+	return wv
+End
+
+static Function/WAVE PeakParamToGauss(peakParam)
+	WAVE peakParam
+
+	variable center, width, height
+
+	Make/FREE/N=3 coef
+	center = peakParam[0][0]
+	width  = CalculateWidth(peakParam[3][0])
+	height = peakParam[1][0]
+	coef   = {center, width, height}
+
+	return coef
+End
+
 static Constant twoSqrtLn2 = 1.66510922231539537641 // printf "%.20f\r", sqrt(ln(2)) * 2
 
 Function CalculateFWHM(width)
@@ -95,6 +132,12 @@ Function CalculateFWHM(width)
 
 	//return width * (2 * sqrt(ln(2)))
 	return width * twoSqrtLn2
+End
+
+Function CalculateWidth(fwhm)
+	variable fwhm
+
+	return fwhm / twoSqrtLn2
 End
 
 Function KillWaveOfWaves(wv)
