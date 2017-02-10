@@ -69,17 +69,16 @@ Function/Wave PeakFind(wavInput, [wvXdata, sorted, redimensioned, differentiate2
 		maxPeaks = 10
 	endif
 	if(ParamIsDefault(minPeakPercent))
-		minPeakPercent = 90
+		minPeakPercent = 5
 	endif
-	estimates = EstPeakNoiseAndSmfact(wavYdata, pBegin, pEnd)
 	if(ParamIsDefault(noiselevel))
 		noiselevel = 1
 	endif
+	estimates = EstPeakNoiseAndSmfact(wavYdata, pBegin, pEnd)
 	noiselevel *= real(estimates)
 	if(ParamIsDefault(smoothingFactor))
-		smoothingFactor = 1
+		smoothingFactor = imag(estimates)
 	endif
-	smoothingFactor *= imag(estimates)
 	if(!(noiselevel>0))
 		noiselevel = 0.01
 	endif
