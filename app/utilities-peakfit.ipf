@@ -45,9 +45,9 @@ Function/WAVE FitGauss(wv, [wvXdata, wvCoef, verbose])
 
 	numPeaks = DimSize(wvCoef, 0)
 	Make/FREE/WAVE/N=(numPeaks) wvPeakParam
-	Make/FREE/D/N=(4,3) peakParam
 	MatrixOP/FREE totalCovar=getDiag(M_Covar,0)
 	for(i = 0; i < numPeaks; i += 1)
+		Make/FREE/D/N=(4,3) peakParam
 		Make/FREE/N=3 covar = totalCovar[3*i + p]
 		MatrixOP/FREE covar=diagonal(covar)
 		GaussPeakParams(wvCoef[i], covar, peakParam)
