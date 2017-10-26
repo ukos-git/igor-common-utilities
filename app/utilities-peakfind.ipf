@@ -58,6 +58,7 @@ Function/Wave PeakFind(wavInput, [wvXdata, sorted, redimensioned, differentiate2
 		Duplicate/FREE/R=[][1] wavInput wvXdata
 		Redimension/N=(-1,0) wavYdata, wvXdata
 	else
+		print "unhandled exception at column number in PeakFind"
 		abort
 	endif
 
