@@ -14,6 +14,14 @@ Function/Wave PeakFind(wavInput, [wvXdata, sorted, redimensioned, differentiate2
 	Variable noiselevel, smoothingFactor, minPeakPercent, maxPeaks
 	variable verbose
 
+	Variable pBegin, pEnd
+	Variable/C estimates
+
+	Variable numColumns
+
+	Variable peaksFound
+	String newName
+
 	if (ParamIsDefault(redimensioned))
 		redimensioned = 0
 	endif
@@ -26,16 +34,15 @@ Function/Wave PeakFind(wavInput, [wvXdata, sorted, redimensioned, differentiate2
 	if (ParamIsDefault(verbose))
 		verbose = 0
 	endif
-
-	Variable pBegin, pEnd
-	Variable/C estimates
-
-	Variable numColumns
-
-	Variable peaksFound
-	String newName
+	if(ParamIsDefault(maxPeaks))
+		maxPeaks = 10
+	endif
 
 	numColumns = Dimsize(wavInput, 1)
+	if(numColumns == 1)
+		Redimension/N=(-1, 0) wavInput
+		numColumns = 0
+	endif
 	if(numColumns == 0)
 		if(ParamIsDefault(wvXdata))
 			Wave wvXdata = $("_calculated_")
@@ -51,6 +58,7 @@ Function/Wave PeakFind(wavInput, [wvXdata, sorted, redimensioned, differentiate2
 		Duplicate/FREE/R=[][1] wavInput wvXdata
 		Redimension/N=(-1,0) wavYdata, wvXdata
 	else
+		print "unhandled exception at column number in PeakFind"
 		abort
 	endif
 
@@ -69,18 +77,18 @@ Function/Wave PeakFind(wavInput, [wvXdata, sorted, redimensioned, differentiate2
 	pBegin = 0
 	pEnd = DimSize(wavYdata, 0) - 1
 
-	if(ParamIsDefault(maxPeaks))
-		maxPeaks = 10
-	endif
 	if(ParamIsDefault(minPeakPercent))
 		minPeakPercent = 5
 	endif
+	try
+		estimates = EstPeakNoiseAndSmfact(wavYdata, pBegin, pEnd)
+	catch
+		estimates = cmplx(0.01, 1)
+	endtry
 	if(ParamIsDefault(noiselevel))
-		noiselevel = 1
+		noiselevel = real(estimates)
 	endif
-	estimates = EstPeakNoiseAndSmfact(wavYdata, pBegin, pEnd)
-	noiselevel *= real(estimates)
-	if(ParamIsDefault(smoothingFactor))
+	if((ParamIsDefault(smoothingFactor)) || (numtype(smoothingFactor) != 0))
 		smoothingFactor = imag(estimates)
 	endif
 	if(!(noiselevel>0))
@@ -99,14 +107,14 @@ Function/Wave PeakFind(wavInput, [wvXdata, sorted, redimensioned, differentiate2
 
 	// Remove too-small peaks
 	if(peaksFound > 0)
-		peaksFound = TrimAmpAutoPeakInfo(W_AutoPeakInfo,minPeakPercent/100)
+		peaksFound = TrimAmpAutoPeakInfo(W_AutoPeakInfo, minPeakPercent / 100)
 	endif
+
+	// Redimension to number of peaks
+	Redimension/N=(peaksFound, -1) wavOutput
 
 	// process peaks
 	if(peaksFound > 0)
-		// Redimension to number of peaks
-		Redimension/N=(peaksFound, -1) wavOutput
-
 		// save peak positions in input wave
 		wavOutput[][%positionX] = W_AutoPeakInfo[p][0]
 		if(differentiate2)
@@ -121,13 +129,13 @@ Function/Wave PeakFind(wavInput, [wvXdata, sorted, redimensioned, differentiate2
 
 		// The x values in W_AutoPeakInfo are still actually points, not X
 		AdjustAutoPeakInfoForX(W_AutoPeakInfo, wavYdata, wvXdata)
-		wavOutput[][%wavelength]	 = W_AutoPeakInfo[p][0]
+		wavOutput[][%wavelength] = W_AutoPeakInfo[p][0]
 
 		// save all data from WM procedure
 		wavOutput[][%width]	 = W_AutoPeakInfo[p][1]
-		wavOutput[][%height]	 = W_AutoPeakInfo[p][2]
-		wavOutput[][%widthL]	 = W_AutoPeakInfo[p][3]
-		wavOutput[][%widthR]	 = W_AutoPeakInfo[p][4]
+		wavOutput[][%height] = W_AutoPeakInfo[p][2]
+		wavOutput[][%widthL] = W_AutoPeakInfo[p][3]
+		wavOutput[][%widthR] = W_AutoPeakInfo[p][4]
 	endif
 
 	if((sorted) && (peaksFound > 0)) // sort is not multidimensional aware
