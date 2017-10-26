@@ -284,7 +284,7 @@ static Function/WAVE RemoveFitErrors(wvPeakParam, [verbose])
 	WAVE/WAVE wvPeakParam
 	variable verbose
 
-	variable i, numPeaks
+	variable i, numPeaks, gaussError
 	variable lastpeaklocation = 0
 
 	if(ParamIsDefault(verbose))
@@ -299,7 +299,8 @@ static Function/WAVE RemoveFitErrors(wvPeakParam, [verbose])
 		WAVE peakParam = wvPeakParam[i]
 		// remove peaks when error too high
 		error[] = (peakParam[p][1] / peakParam[p][0])^2
-		if(sqrt(sum(error)) > 0.20)
+		gaussError = sqrt(sum(error))
+		if(gaussError > 0.2)
 			DeletePoints/M=0 i, 1, wv
 			if(verbose > 1)
 				print "deleted peak: too high error"
