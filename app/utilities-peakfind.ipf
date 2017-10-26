@@ -39,6 +39,10 @@ Function/Wave PeakFind(wavInput, [wvXdata, sorted, redimensioned, differentiate2
 	endif
 
 	numColumns = Dimsize(wavInput, 1)
+	if(numColumns == 1)
+		Redimension/N=(-1, 0) wavInput
+		numColumns = 0
+	endif
 	if(numColumns == 0)
 		if(ParamIsDefault(wvXdata))
 			Wave wvXdata = $("_calculated_")
