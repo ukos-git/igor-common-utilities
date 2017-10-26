@@ -14,6 +14,14 @@ Function/Wave PeakFind(wavInput, [wvXdata, sorted, redimensioned, differentiate2
 	Variable noiselevel, smoothingFactor, minPeakPercent, maxPeaks
 	variable verbose
 
+	Variable pBegin, pEnd
+	Variable/C estimates
+
+	Variable numColumns
+
+	Variable peaksFound
+	String newName
+
 	if (ParamIsDefault(redimensioned))
 		redimensioned = 0
 	endif
@@ -26,14 +34,9 @@ Function/Wave PeakFind(wavInput, [wvXdata, sorted, redimensioned, differentiate2
 	if (ParamIsDefault(verbose))
 		verbose = 0
 	endif
-
-	Variable pBegin, pEnd
-	Variable/C estimates
-
-	Variable numColumns
-
-	Variable peaksFound
-	String newName
+	if(ParamIsDefault(maxPeaks))
+		maxPeaks = 10
+	endif
 
 	numColumns = Dimsize(wavInput, 1)
 	if(numColumns == 0)
