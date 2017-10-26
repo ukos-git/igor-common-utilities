@@ -12,8 +12,7 @@ Function/WAVE FitGauss(wv, [wvXdata, wvCoef, verbose])
 	WAVE/WAVE wvCoef
 	variable verbose
 
-	variable center, height, fwhm, width, area
-	variable i, numPeaks, V_FitError
+	variable V_FitError
 	string myFunctions
 	variable cleanup = 0
 
@@ -43,9 +42,36 @@ Function/WAVE FitGauss(wv, [wvXdata, wvCoef, verbose])
 	endif
 	WAVE M_Covar
 
+	WAVE peakParam = GaussCoefToPeakParam(wvCoef, wvCovar = M_Covar, verbose = verbose)
+	
+	if(cleanup)
+		KillWaveOfWaves(wvCoef)
+		KillWaves/Z M_Covar
+	endif
+	
+	return peakParam
+End
+	
+Function/WAVE GaussCoefToPeakParam(wvCoef, [wvCovar, verbose])
+	WAVE/WAVE wvCoef
+	WAVE wvCovar
+	variable verbose
+	
+	variable center, height, fwhm, width, area
+	variable i, numPeaks
+	
+	if(ParamIsDefault(verbose))
+		verbose = 0
+	endif
+	
 	numPeaks = DimSize(wvCoef, 0)
+	
+	if(ParamIsDefault(wvCovar))
+		Make/FREE/N=(numPeaks * 3, numPeaks * 3) wvCovar = 0
+	endif
+
 	Make/FREE/WAVE/N=(numPeaks) wvPeakParam
-	MatrixOP/FREE totalCovar=getDiag(M_Covar,0)
+	MatrixOP/FREE totalCovar=getDiag(wvCovar,0)
 	for(i = 0; i < numPeaks; i += 1)
 		Make/FREE/D/N=(4,3) peakParam
 		Make/FREE/N=3 covar = totalCovar[3*i + p]
