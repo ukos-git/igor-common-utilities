@@ -77,9 +77,6 @@ Function/Wave PeakFind(wavInput, [wvXdata, sorted, redimensioned, differentiate2
 	pBegin = 0
 	pEnd = DimSize(wavYdata, 0) - 1
 
-	if(ParamIsDefault(maxPeaks))
-		maxPeaks = 10
-	endif
 	if(ParamIsDefault(minPeakPercent))
 		minPeakPercent = 5
 	endif
