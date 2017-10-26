@@ -657,7 +657,7 @@ Function/WAVE RemoveSpikes(wv)
     WAVE wv
 
 	Duplicate/FREE wv spikefree
-    Smooth/M=0 3, spikefree
+    Smooth/M=0.025 3, spikefree
 
     return spikefree
 End
