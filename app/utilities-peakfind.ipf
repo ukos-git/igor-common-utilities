@@ -129,13 +129,13 @@ Function/Wave PeakFind(wavInput, [wvXdata, sorted, redimensioned, differentiate2
 
 		// The x values in W_AutoPeakInfo are still actually points, not X
 		AdjustAutoPeakInfoForX(W_AutoPeakInfo, wavYdata, wvXdata)
-		wavOutput[][%wavelength]	 = W_AutoPeakInfo[p][0]
+		wavOutput[][%wavelength] = W_AutoPeakInfo[p][0]
 
 		// save all data from WM procedure
 		wavOutput[][%width]	 = W_AutoPeakInfo[p][1]
-		wavOutput[][%height]	 = W_AutoPeakInfo[p][2]
-		wavOutput[][%widthL]	 = W_AutoPeakInfo[p][3]
-		wavOutput[][%widthR]	 = W_AutoPeakInfo[p][4]
+		wavOutput[][%height] = W_AutoPeakInfo[p][2]
+		wavOutput[][%widthL] = W_AutoPeakInfo[p][3]
+		wavOutput[][%widthR] = W_AutoPeakInfo[p][4]
 	endif
 
 	if((sorted) && (peaksFound > 0)) // sort is not multidimensional aware
