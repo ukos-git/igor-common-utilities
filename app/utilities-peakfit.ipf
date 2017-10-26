@@ -104,14 +104,39 @@ Function/WAVE GaussCoefToPeakParam(wvCoef, [wvCovar, verbose])
 		endfor
 	endif
 
-	if(cleanup)
-		KillWaveOfWaves(wvCoef)
-	endif
-
 	if(numPeaks == 0)
 		return $""
 	endif
 	return wvPeakParam
+End
+
+Function/WAVE peakParamToResult(peakParam)
+	WAVE/WAVE peakParam
+
+	variable numResults, i
+
+	if(WaveExists(peakParam))
+		numResults = DimSize(peakParam, 0)
+	endif
+
+	Make/FREE/N=(numResults, 6) result
+	SetDimLabel 1, 0, position, result
+	SetDimLabel 1, 1, intensity, result
+	SetDimLabel 1, 2, fwhm, result
+	SetDimLabel 1, 3, position_err, result
+	SetDimLabel 1, 4, intensity_err, result
+	SetDimLabel 1, 5, fwhm_err, result
+	for(i = 0; i < numResults; i += 1)
+		wave peak = peakParam[i]
+		result[i][%position] = peak[0][0]
+		result[i][%position_err] = peak[0][1]
+		result[i][%intensity] = peak[1][0]
+		result[i][%intensity_err] = peak[1][1]
+		result[i][%fwhm] = peak[3][0]
+		result[i][%fwhm_err] = peak[3][1]
+	endfor
+
+	return result
 End
 
 Function/WAVE CreateFitCurve(wvPeakParam, xMin, xMax, size)
