@@ -110,11 +110,11 @@ Function/Wave PeakFind(wavInput, [wvXdata, sorted, redimensioned, differentiate2
 		peaksFound = TrimAmpAutoPeakInfo(W_AutoPeakInfo, minPeakPercent / 100)
 	endif
 
+	// Redimension to number of peaks
+	Redimension/N=(peaksFound, -1) wavOutput
+
 	// process peaks
 	if(peaksFound > 0)
-		// Redimension to number of peaks
-		Redimension/N=(peaksFound, -1) wavOutput
-
 		// save peak positions in input wave
 		wavOutput[][%positionX] = W_AutoPeakInfo[p][0]
 		if(differentiate2)
