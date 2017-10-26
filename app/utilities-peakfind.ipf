@@ -107,7 +107,7 @@ Function/Wave PeakFind(wavInput, [wvXdata, sorted, redimensioned, differentiate2
 
 	// Remove too-small peaks
 	if(peaksFound > 0)
-		peaksFound = TrimAmpAutoPeakInfo(W_AutoPeakInfo,minPeakPercent/100)
+		peaksFound = TrimAmpAutoPeakInfo(W_AutoPeakInfo, minPeakPercent / 100)
 	endif
 
 	// process peaks
