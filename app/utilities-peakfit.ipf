@@ -654,12 +654,12 @@ End
 
 // Median Smoothing for removing Spikes
 Function/WAVE RemoveSpikes(wv)
-    WAVE wv
+	WAVE wv
 
 	Duplicate/FREE wv spikefree
-    Smooth/M=0.025 3, spikefree
+	Smooth/M=0.01 5, spikefree
 
-    return spikefree
+	return spikefree
 End
 
 Function/WAVE RemoveBackground(wv, [wvXdata])
