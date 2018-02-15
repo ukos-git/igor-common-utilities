@@ -45,7 +45,7 @@ Function/Wave PeakFind(wavInput, [wvXdata, sorted, redimensioned, differentiate2
 	endif
 	if(numColumns == 0)
 		if(ParamIsDefault(wvXdata))
-			Wave wvXdata = $("_calculated_")
+			Wave/Z wvXdata = $("_calculated_")
 		endif
 		if(differentiate2)
 			wave wavYdata = Differentiate2Wave(wavInput, 10)
