@@ -31,6 +31,13 @@ static Function diameter(n, m)
 	return 0.144 / 3.1415 * (3 * (n^2 + n*m + m^2))^(0.5)
 End
 
+// for external calls
+Function cnt_diameter(n, m)
+	Variable n, m
+
+	return diameter(n, m)
+End
+
 Function example()
 	Variable mi, ma, avg, size
 	Variable timerRefNum
