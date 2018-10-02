@@ -37,6 +37,12 @@ Function/Wave PeakFind(wavInput, [wvXdata, sorted, redimensioned, differentiate2
 	if(ParamIsDefault(maxPeaks))
 		maxPeaks = 10
 	endif
+	if(ParamIsDefault(noiselevel))
+		noiselevel = 1 // relative value
+	endif
+	if((ParamIsDefault(smoothingFactor)) || numtype(smoothingFactor) != 0)
+		smoothingFactor = 1 // relative value
+	endif
 
 	numColumns = Dimsize(wavInput, 1)
 	if(numColumns == 1)
@@ -85,15 +91,8 @@ Function/Wave PeakFind(wavInput, [wvXdata, sorted, redimensioned, differentiate2
 	catch
 		estimates = cmplx(0.01, 1)
 	endtry
-	if(ParamIsDefault(noiselevel))
-		noiselevel = real(estimates)
-	endif
-	if((ParamIsDefault(smoothingFactor)) || (numtype(smoothingFactor) != 0))
-		smoothingFactor = imag(estimates)
-	endif
-	if(!(noiselevel>0))
-		noiselevel = 0.01
-	endif
+	noiselevel = noiselevel * real(estimates)
+	smoothingFactor = smoothingFactor * imag(estimates)
 
 	peaksFound = AutoFindPeaksNew(wavYdata, pBegin, pEnd, noiseLevel, smoothingFactor, maxPeaks)
 	WAVE W_AutoPeakInfo // output of AutoFindPeaksNew
