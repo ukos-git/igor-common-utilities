@@ -7,18 +7,17 @@
 
 // available Functions from WM <Peak Functions>
 // fVoigtFit, fLorentzianFit, fGaussFit ...
-Function/WAVE FitGauss(wv, [wvXdata, wvCoef, verbose])
+Function/WAVE FitGauss(wv, [wvXdata, wvCoef, verbose, cleanup])
 	WAVE wv, wvXdata
 	WAVE/WAVE wvCoef
 	variable verbose
+	variable cleanup
 
 	variable V_FitError
 	string myFunctions
-	variable cleanup = 0
 
-	if(ParamIsDefault(verbose))
-		verbose = 0
-	endif
+	verbose = ParamIsDefault(verbose) ? 0 : !!verbose
+	cleanup = ParamIsDefault(cleanup) ? 0 : !!cleanup
 
 	if(ParamIsDefault(wvCoef))
 		if(ParamIsDefault(wvXdata))
