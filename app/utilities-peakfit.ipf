@@ -41,7 +41,10 @@ Function/WAVE FitGauss(wv, [wvXdata, wvCoef, verbose, cleanup])
 	endif
 	WAVE M_Covar
 
-	WAVE peakParam = GaussCoefToPeakParam(wvCoef, wvCovar = M_Covar, verbose = verbose)
+	WAVE/Z peakParam = GaussCoefToPeakParam(wvCoef, wvCovar = M_Covar, verbose = verbose)
+	if(!WaveExists(peakParam))
+		print "Error in FitGauss: GaussCoefToPeakParam returned no result"
+	endif
 	
 	if(cleanup)
 		KillWaveOfWaves(wvCoef)
