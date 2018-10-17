@@ -1,8 +1,7 @@
 #pragma TextEncoding = "UTF-8"
-#pragma rtGlobals=3		// Use modern global access method and strict wave access.
+#pragma rtGlobals=3
 
 #pragma IndependentModule = Utilities
-#include "utilities-lists"
 
 Function/WAVE getTopWindowImage()
 	String topWindowImages =	ImageNameList("",";")

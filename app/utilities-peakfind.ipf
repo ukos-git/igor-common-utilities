@@ -2,6 +2,7 @@
 #pragma rtGlobals=3
 
 #pragma IndependentModule = Utilities
+
 #include <Peak AutoFind>
 
 // PeakFind Functions based on WM procedure and swnt-absorption.
