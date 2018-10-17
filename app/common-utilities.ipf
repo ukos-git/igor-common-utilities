@@ -3,6 +3,8 @@
 
 #pragma IndependentModule = Utilities
 
+SetIgorOption IndependentModuleDev=1
+
 #include "utilities-globalvar"
 #include "utilities-peakfind"
 #include "utilities-peakfit"
