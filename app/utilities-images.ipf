@@ -2,6 +2,7 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 
 #pragma IndependentModule = Utilities
+#include "utilities-lists"
 
 Function/WAVE getTopWindowImage()
 	String topWindowImages =	ImageNameList("",";")
@@ -18,6 +19,29 @@ Function/WAVE getTopWindowImage()
 	endif
 
 	return image
+End
+
+Function/WAVE getTopWindowWave()
+	string itemName, itemsList
+	Variable numItems
+
+	String topWindowImages =	ImageNameList("", ";")
+	String topWindowTraces =	TraceNameList("", ";", 1)
+	Variable numImages = ItemsInList(topWindowImages)
+
+	itemsList = ConcatenateLists(topWindowImages, topWindowTraces)
+	numItems = ItemsInList(itemsList)
+
+	if(numItems == 0)
+		print "No traces found in top graph"
+		return $""
+	endif
+
+	itemName = StringFromList(0, itemsList)
+	if(!!numImages)
+		return ImageNameToWaveRef("", itemName)
+	endif
+	return TraceNameToWaveRef("", itemName)
 End
 
 // set the (0,0) position within an image to the cursor position
@@ -59,5 +83,3 @@ Function AddWaveScaleOffset(wv, offsetX, offsetY, [relative])
 		SetScale/P y, - offsetY, DimDelta(wv, 1), wv
 	endif
 End
-
-
