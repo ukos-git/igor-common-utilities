@@ -1,3 +1,4 @@
+#pragma IndependentModule= Utilities
 #pragma TextEncoding = "UTF-8"
 #pragma rtGlobals=3
 
@@ -14,6 +15,8 @@ Function/S ConcatenateLists(list1, list2)
 End
 
 // add a list spearator to the end of the current list
+//
+// also see RemoveEnding(str  [, endingStr ])
 //
 // @param list    input list
 // @param listSep [optional] defaults to semicolon
