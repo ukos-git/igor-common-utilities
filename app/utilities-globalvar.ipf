@@ -1,3 +1,4 @@
+#pragma IndependentModule= Utilities
 #pragma TextEncoding = "UTF-8"
 #pragma rtGlobals=3
 
@@ -30,17 +31,30 @@ Function createSVAR(name, [dfr, set, init])
 	endif
 End
 
-Function/S loadSVAR(name, [dfr])
+
+Function/S loadSVAR(name, [dfr, defStrVal])
 	String name
 	DFREF dfr
+	String defStrVal
+
+	String pathStr
 
 	if(ParamIsDefault(dfr))
 		dfr = GetDataFolderDFR()
 	endif
+	if(ParamIsDefault(defStrVal))
+		defStrVal = ""
+	endif
 
+	pathStr = GetDataFolder(1, dfr) + name
+
+	// deprecated.
 	SVAR/Z/SDFR=dfr var = $name
+	if(!SVAR_EXISTS(var))
+		printf "Utilities#loadSVAR() could not find %s\r", pathStr
+	endif
 
-	return var
+	return StrVarOrDefault(pathStr, defStrVal)
 End
 
 Function loadNVAR(name, [dfr])
