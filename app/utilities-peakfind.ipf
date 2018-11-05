@@ -157,7 +157,7 @@ Function/Wave PeakFind(wavInput, [wvXdata, sorted, redimensioned, differentiate2
 		wavOutput[][6] = six[p]
 	endif
 
-	if (redimensioned)
+	if(redimensioned)
 		Redimension/N=(-1,4) wavOutput
 	endif
 
