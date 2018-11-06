@@ -69,7 +69,7 @@ Function/WAVE GaussCoefToPeakParam(wvCoef, [wvCovar, verbose])
 	
 	numPeaks = DimSize(wvCoef, 0)
 	
-	if(ParamIsDefault(wvCovar))
+	if(ParamIsDefault(wvCovar) || !WaveExists(wvCovar)  || DimSize(wvCovar, 0) != numPeaks * 3)
 		Make/FREE/N=(numPeaks * 3, numPeaks * 3) wvCovar = 0
 	endif
 
