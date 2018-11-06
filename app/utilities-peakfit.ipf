@@ -79,7 +79,9 @@ Function/WAVE GaussCoefToPeakParam(wvCoef, [wvCovar, verbose])
 		Make/FREE/D/N=(4,3) peakParam
 		Make/FREE/N=3 covar = totalCovar[3*i + p]
 		MatrixOP/FREE covar=diagonal(covar)
-		GaussPeakParams(wvCoef[i], covar, peakParam)
+		WAVE coef = wvCoef[i]
+		GaussPeakParams(coef, covar, peakParam)
+		peakParam[2][1] = numType(peakParam[2][0]) != 0 ? 0 : peakParam[2][1]
 		wvPeakParam[i] = peakParam
 	endfor
 
