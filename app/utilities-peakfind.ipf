@@ -167,14 +167,8 @@ Function/Wave SmoothWave(wavInput, numSmooth)
 	Duplicate/FREE wavInput wavOutput
 
 	if (numSmooth>0)
-		if (Dimsize(wavInput, 1) == 3)
-			Duplicate/R=[][0]/FREE wavInput intensity
-			Redimension/N=(-1,0) intensity
-			Smooth numSmooth, intensity
-			wavOutput[][0] = intensity[p]
-		else
-			Smooth numSmooth, wavOutput
-		endif
+	if(numSmooth > 0)
+		Smooth/B=3 numSmooth, wavOutput
 	endif
 
 	return wavOutput
