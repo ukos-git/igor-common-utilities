@@ -598,11 +598,11 @@ Function/WAVE RemovePeaks(wv, [wvXdata, tolerance, verbose])
 	endif
 
 	// get peaks
-    WAVE wavMaxima = PeakFind(wv, wvXdata = wvXdata, minPeakPercent = 20, smoothingFactor = 1, verbose = verbose)
-    numPeaks = Dimsize(wavMaxima, 0)
-    Make/FREE/N=(numPeaks) peaksX = wavMaxima[p][%wavelength]
-    Make/FREE/N=(numPeaks) peaksY = wavMaxima[p][%positionY]
-    Make/FREE/N=(numPeaks) peaksF = Utilities#CalculateFWHM(wavMaxima[p][%width])
+	WAVE wavMaxima = PeakFind(wv, wvXdata = wvXdata, minPeakPercent = 20, smoothingFactor = 1, verbose = verbose)
+	numPeaks = Dimsize(wavMaxima, 0)
+	Make/FREE/N=(numPeaks) peaksX = wavMaxima[p][%wavelength]
+	Make/FREE/N=(numPeaks) peaksY = wavMaxima[p][%positionY]
+	Make/FREE/N=(numPeaks) peaksF = Utilities#CalculateFWHM(wavMaxima[p][%width])
 	Sort peaksX, peaksX, peaksY, peaksF
 
 	// remove peaks
