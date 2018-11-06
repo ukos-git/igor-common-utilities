@@ -6,6 +6,34 @@
 #include <Peak Functions>
 #include <PeakFunctions2>
 
+Function/WAVE DuplicateWaveOfWaves(wv)
+	WAVE/WAVE wv
+
+	Variable i, numItems
+
+	numItems = DimSize(wv, 0)
+	Make/FREE/WAVE/N=(numItems) wvOut
+	for(i = 0; i < numItems; i += 1)
+		WAVE item = wv[i]
+		Duplicate/FREE item temp
+		wvOut[i] = temp
+	endfor
+	return wvOut
+End
+
+Function/WAVE restoreWaveOfWaves(original, backup)
+	WAVE/WAVE original, backup
+
+	Variable i, numItems
+
+	numItems = DimSize(original, 0)
+	for(i = 0; i < numItems; i += 1)
+		WAVE backupWave = backup[i]
+		WAVE originalWave = original[i]
+		originalWave = backupWave
+	endfor
+End
+
 // available Functions from WM <Peak Functions>
 // fVoigtFit, fLorentzianFit, fGaussFit ...
 Function/WAVE FitGauss(wv, [wvXdata, wvCoef, verbose, cleanup])
@@ -28,6 +56,8 @@ Function/WAVE FitGauss(wv, [wvXdata, wvCoef, verbose, cleanup])
 		endif
 		cleanup = 1 // delete coef waves
 	endif
+	WAVE/WAVE wvCoefFallback = DuplicateWaveOfWaves(wvCoef)
+
 	myFunctions = BuildFitStringGauss(wvCoef)
 
 	V_FitError = 0
@@ -37,14 +67,21 @@ Function/WAVE FitGauss(wv, [wvXdata, wvCoef, verbose, cleanup])
 		FuncFit/Q=1/M=2 {string = myFunctions} wv/X=wvXdata
 	endif
 	if(V_FitError != 0)
-		KillWaveOfWaves(wvCoef)
-		return $("")
+		if(verbose)
+			print "Error in FitGauss: FuncFit returned no result. Fallback to initial coef."
+		endif
+		restoreWaveOfWaves(wvCoef, wvCoefFallback)
 	endif
-	WAVE M_Covar
-
+	WAVE/Z M_Covar
 	WAVE/Z peakParam = GaussCoefToPeakParam(wvCoef, wvCovar = M_Covar, verbose = verbose)
 	if(!WaveExists(peakParam))
-		print "Error in FitGauss: GaussCoefToPeakParam returned no result"
+		restoreWaveOfWaves(wvCoef, wvCoefFallback)
+		WAVE/Z peakParam = GaussCoefToPeakParam(wvCoefFallback) 
+	endif
+	if(!WaveExists(peakParam))
+		if(verbose)
+			print "Error in FitGauss: no result."
+		endif
 	endif
 	
 	if(cleanup)
