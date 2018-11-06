@@ -166,7 +166,6 @@ Function/Wave SmoothWave(wavInput, numSmooth)
 
 	Duplicate/FREE wavInput wavOutput
 
-	if (numSmooth>0)
 	if(numSmooth > 0)
 		Smooth/B=3 numSmooth, wavOutput
 	endif
