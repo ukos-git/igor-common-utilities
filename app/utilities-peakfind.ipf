@@ -74,7 +74,7 @@ Function/Wave PeakFind(wavInput, [wvXdata, sorted, redimensioned, differentiate2
 	// label columns of wave for readability
 	SetDimLabel 1, 0, location, wavOutput
 	SetDimLabel 1, 1, height, wavOutput
-	SetDimLabel 1, 2, width, wavOutput
+	SetDimLabel 1, 2, fwhm, wavOutput
 	SetDimLabel 1, 3, positionY, wavOutput
 	SetDimLabel 1, 4, positionX, wavOutput
 	SetDimLabel 1, 5, widthL, wavOutput // from WM: somewhat free width left and right
@@ -132,7 +132,7 @@ Function/Wave PeakFind(wavInput, [wvXdata, sorted, redimensioned, differentiate2
 		wavOutput[][%location] = W_AutoPeakInfo[p][0]
 
 		// save all data from WM procedure
-		wavOutput[][%width]  = W_AutoPeakInfo[p][1]
+		wavOutput[][%fwhm]  = W_AutoPeakInfo[p][1]
 		wavOutput[][%height] = W_AutoPeakInfo[p][2]
 		wavOutput[][%widthL] = W_AutoPeakInfo[p][3]
 		wavOutput[][%widthR] = W_AutoPeakInfo[p][4]

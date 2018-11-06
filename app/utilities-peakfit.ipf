@@ -60,7 +60,7 @@ Function/WAVE GaussCoefToPeakParam(wvCoef, [wvCovar, verbose])
 	WAVE wvCovar
 	variable verbose
 	
-	variable center, height, fwhm, width, area
+	variable location, height, fwhm, width, area
 	variable i, numPeaks
 	
 	if(ParamIsDefault(verbose))
@@ -90,20 +90,20 @@ Function/WAVE GaussCoefToPeakParam(wvCoef, [wvCovar, verbose])
 	numPeaks = DimSize(wvPeakParam, 0)
 	if(verbose && (numPeaks > 0))
 		if(verbose > 1)
-			printf "method \tnr \tcenter \theight \tFWHM \t\tarea\r"
+			printf "method \tnr \tlocation \theight \tFWHM \t\tarea\r"
 		endif
 		for(i = 0; i < numPeaks; i += 1)
 			WAVE peakParam = wvPeakParam[i]
-			center = peakParam[0][0]
+			location = peakParam[0][0]
 			fwhm   = peakParam[3][0]
 			height = peakParam[1][0]
 			area   = peakParam[2][0]
-			printf "FuncFit \t%d \t%.4f \t%.4f \t%.4f \t%.4f\r", i, center, height, fwhm, area
-			center = peakParam[0][1]
+			printf "FuncFit \t%d \t%.4f \t%.4f \t%.4f \t%.4f\r", i, location, height, fwhm, area
+			location = peakParam[0][1]
 			fwhm   = peakParam[3][1]
 			height = peakParam[1][1]
 			area   = peakParam[2][1]
-			printf "Error \t\t%d \t%.4f \t%.4f \t%.4f \t%.4f\r", i, center, height, fwhm, area
+			printf "Error \t\t%d \t%.4f \t%.4f \t%.4f \t%.4f\r", i, location, height, fwhm, area
 		endfor
 	endif
 
@@ -123,18 +123,18 @@ Function/WAVE peakParamToResult(peakParam)
 	endif
 
 	Make/FREE/N=(numResults, 6) result
-	SetDimLabel 1, 0, position, result
-	SetDimLabel 1, 1, intensity, result
+	SetDimLabel 1, 0, location, result
+	SetDimLabel 1, 1, height, result
 	SetDimLabel 1, 2, fwhm, result
-	SetDimLabel 1, 3, position_err, result
-	SetDimLabel 1, 4, intensity_err, result
+	SetDimLabel 1, 3, location_err, result
+	SetDimLabel 1, 4, height_err, result
 	SetDimLabel 1, 5, fwhm_err, result
 	for(i = 0; i < numResults; i += 1)
 		wave peak = peakParam[i]
-		result[i][%position] = peak[0][0]
-		result[i][%position_err] = peak[0][1]
-		result[i][%intensity] = peak[1][0]
-		result[i][%intensity_err] = peak[1][1]
+		result[i][%location] = peak[0][0]
+		result[i][%location_err] = peak[0][1]
+		result[i][%height] = peak[1][0]
+		result[i][%height_err] = peak[1][1]
 		result[i][%fwhm] = peak[3][0]
 		result[i][%fwhm_err] = peak[3][1]
 	endfor
@@ -168,13 +168,13 @@ End
 static Function/WAVE PeakParamToGauss(peakParam)
 	WAVE peakParam
 
-	variable center, width, height
+	variable location, width, height
 
 	Make/FREE/N=3 coef
-	center = peakParam[0][0]
-	width  = CalculateWidth(peakParam[3][0])
-	height = peakParam[1][0]
-	coef   = {center, width, height}
+	location = peakParam[0][0]
+	width    = CalculateWidth(peakParam[3][0])
+	height   = peakParam[1][0]
+	coef     = {location, width, height}
 
 	return coef
 End
@@ -212,7 +212,7 @@ Function/WAVE BuildCoefWv(wv, [wvXdata, peaks, verbose, dfr])
 	variable verbose
 	DFREF dfr
 
-	variable center, height, fwhm, width
+	variable location, height, fwhm, width
 	variable i, numPeaks
 	DFREF saveDFR
 	string coefName
@@ -242,10 +242,10 @@ Function/WAVE BuildCoefWv(wv, [wvXdata, peaks, verbose, dfr])
 		coefName = UniqueName("coef", 1, 0)
 		Make/D/N=3 dfr:$coefName/WAVE=coef
 
-		center = peaks[i][%location]
-		width = peaks[i][%width]
-		height = peaks[i][%height]
-		coef = {center, width , height}
+		location = peaks[i][%location]
+		width    = peaks[i][%fwhm]
+		height   = peaks[i][%height]
+		coef = {location, width , height}
 
 		wvCoef[i] = coef
 	endfor
@@ -254,10 +254,10 @@ Function/WAVE BuildCoefWv(wv, [wvXdata, peaks, verbose, dfr])
 	if((verbose > 1) && (numPeaks > 0))
 		for(i = 0; i < numPeaks; i += 1)
 			WAVE coef = wvCoef[i]
-			center = peaks[i][%location]
+			location = peaks[i][%location]
 			height = peaks[i][%height]
-			fwhm  = CalculateFWHM(peaks[i][%width])
-			printf "start \t%d \t%.4f \t%.4f \t%.4f\r", i, center, height, fwhm
+			fwhm  = CalculateFWHM(peaks[i][%fwhm])
+			printf "start \t%d \t%.4f \t%.4f \t%.4f\r", i, location, height, fwhm
 		endfor
 	endif
 
@@ -602,7 +602,7 @@ Function/WAVE RemovePeaks(wv, [wvXdata, tolerance, verbose])
 	numPeaks = Dimsize(wavMaxima, 0)
 	Make/FREE/N=(numPeaks) peaksX = wavMaxima[p][%location]
 	Make/FREE/N=(numPeaks) peaksY = wavMaxima[p][%positionY]
-	Make/FREE/N=(numPeaks) peaksF = Utilities#CalculateFWHM(wavMaxima[p][%width])
+	Make/FREE/N=(numPeaks) peaksF = Utilities#CalculateFWHM(wavMaxima[p][%fwhm])
 	Sort peaksX, peaksX, peaksY, peaksF
 
 	// remove peaks
