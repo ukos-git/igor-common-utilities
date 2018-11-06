@@ -132,7 +132,7 @@ Function/Wave PeakFind(wavInput, [wvXdata, sorted, redimensioned, differentiate2
 		wavOutput[][%wavelength] = W_AutoPeakInfo[p][0]
 
 		// save all data from WM procedure
-		wavOutput[][%width]	 = W_AutoPeakInfo[p][1]
+		wavOutput[][%width]  = W_AutoPeakInfo[p][1]
 		wavOutput[][%height] = W_AutoPeakInfo[p][2]
 		wavOutput[][%widthL] = W_AutoPeakInfo[p][3]
 		wavOutput[][%widthR] = W_AutoPeakInfo[p][4]
@@ -147,7 +147,7 @@ Function/Wave PeakFind(wavInput, [wvXdata, sorted, redimensioned, differentiate2
 		Make/FREE/N=(Dimsize(wavOutput, 0)) five = wavOutput[p][5]
 		Make/FREE/N=(Dimsize(wavOutput, 0)) six = wavOutput[p][6]
 
-		Sort zero, zero, one, two, three, four, five, six
+		Sort/R one, zero, one, two, three, four, five, six
 		wavOutput[][0] = zero[p]
 		wavOutput[][1] = one[p]
 		wavOutput[][2] = two[p]
