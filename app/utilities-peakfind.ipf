@@ -72,7 +72,7 @@ Function/Wave PeakFind(wavInput, [wvXdata, sorted, redimensioned, differentiate2
 	Make/FREE/N=(maxPeaks,7) wavOutput
 
 	// label columns of wave for readability
-	SetDimLabel 1, 0, wavelength, wavOutput
+	SetDimLabel 1, 0, location, wavOutput
 	SetDimLabel 1, 1, height, wavOutput
 	SetDimLabel 1, 2, width, wavOutput
 	SetDimLabel 1, 3, positionY, wavOutput
@@ -129,7 +129,7 @@ Function/Wave PeakFind(wavInput, [wvXdata, sorted, redimensioned, differentiate2
 
 		// The x values in W_AutoPeakInfo are still actually points, not X
 		AdjustAutoPeakInfoForX(W_AutoPeakInfo, wavYdata, wvXdata)
-		wavOutput[][%wavelength] = W_AutoPeakInfo[p][0]
+		wavOutput[][%location] = W_AutoPeakInfo[p][0]
 
 		// save all data from WM procedure
 		wavOutput[][%width]  = W_AutoPeakInfo[p][1]

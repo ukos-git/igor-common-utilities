@@ -242,7 +242,7 @@ Function/WAVE BuildCoefWv(wv, [wvXdata, peaks, verbose, dfr])
 		coefName = UniqueName("coef", 1, 0)
 		Make/D/N=3 dfr:$coefName/WAVE=coef
 
-		center = peaks[i][%wavelength]
+		center = peaks[i][%location]
 		width = peaks[i][%width]
 		height = peaks[i][%height]
 		coef = {center, width , height}
@@ -254,7 +254,7 @@ Function/WAVE BuildCoefWv(wv, [wvXdata, peaks, verbose, dfr])
 	if((verbose > 1) && (numPeaks > 0))
 		for(i = 0; i < numPeaks; i += 1)
 			WAVE coef = wvCoef[i]
-			center = peaks[i][%wavelength]
+			center = peaks[i][%location]
 			height = peaks[i][%height]
 			fwhm  = CalculateFWHM(peaks[i][%width])
 			printf "start \t%d \t%.4f \t%.4f \t%.4f\r", i, center, height, fwhm
@@ -600,7 +600,7 @@ Function/WAVE RemovePeaks(wv, [wvXdata, tolerance, verbose])
 	// get peaks
 	WAVE wavMaxima = PeakFind(wv, wvXdata = wvXdata, minPeakPercent = 20, smoothingFactor = 1, verbose = verbose)
 	numPeaks = Dimsize(wavMaxima, 0)
-	Make/FREE/N=(numPeaks) peaksX = wavMaxima[p][%wavelength]
+	Make/FREE/N=(numPeaks) peaksX = wavMaxima[p][%location]
 	Make/FREE/N=(numPeaks) peaksY = wavMaxima[p][%positionY]
 	Make/FREE/N=(numPeaks) peaksF = Utilities#CalculateFWHM(wavMaxima[p][%width])
 	Sort peaksX, peaksX, peaksY, peaksF
