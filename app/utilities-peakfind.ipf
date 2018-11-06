@@ -113,6 +113,16 @@ Function/Wave PeakFind(wavInput, [wvXdata, noiselevel, smoothingFactor, minPeakP
 		wavOutput[][%widthR] = W_AutoPeakInfo[p][4]
 	endif
 
+	if(peaksFound == 0)
+		// magic !
+		WAVE smoothed = SmoothWave(wvYdata, smoothingFactor)
+		WaveStats/Q/M=1 smoothed
+		Redimension/N=(1, -1) wavOutput
+		wavOutput = NaN
+		wavOutput[0][%location] = V_maxRowLoc == -1 ? NaN : wvXdata[V_maxRowLoc]
+		wavOutput[0][%fwhm] = NaN
+		wavOutput[0][%height] = V_max
+		peaksFound = 1
 	endif
 
 	SortColumns/KNDX={1,0} sortWaves=wavOutput
