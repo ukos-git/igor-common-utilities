@@ -162,13 +162,17 @@ Function/WAVE peakParamToResult(peakParam)
 		numResults = DimSize(peakParam, 0)
 	endif
 
-	Make/FREE/N=(numResults, 6) result
+	Make/FREE/N=(numResults, 8) result
 	SetDimLabel 1, 0, location, result
 	SetDimLabel 1, 1, height, result
 	SetDimLabel 1, 2, fwhm, result
-	SetDimLabel 1, 3, location_err, result
-	SetDimLabel 1, 4, height_err, result
-	SetDimLabel 1, 5, fwhm_err, result
+	SetDimLabel 1, 3, area, result
+
+	SetDimLabel 1, 4, location_err, result
+	SetDimLabel 1, 5, height_err, result
+	SetDimLabel 1, 6, fwhm_err, result
+	SetDimLabel 1, 7, area_err, result
+
 	for(i = 0; i < numResults; i += 1)
 		wave peak = peakParam[i]
 		result[i][%location] = peak[0][0]
@@ -177,6 +181,8 @@ Function/WAVE peakParamToResult(peakParam)
 		result[i][%height_err] = peak[1][1]
 		result[i][%fwhm] = peak[3][0]
 		result[i][%fwhm_err] = peak[3][1]
+		result[i][%area] = peak[2][0]
+		result[i][%area_err] = peak[2][1]
 	endfor
 
 	return result
