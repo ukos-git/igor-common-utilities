@@ -120,7 +120,7 @@ Function/Wave PeakFind(wavInput, [wvXdata, noiselevel, smoothingFactor, minPeakP
 		Redimension/N=(1, -1) wavOutput
 		wavOutput = NaN
 		wavOutput[0][%location] = V_maxRowLoc == -1 ? NaN : wvXdata[V_maxRowLoc]
-		wavOutput[0][%fwhm] = NaN
+		wavOutput[0][%fwhm] = abs((wvXdata[0] - wvXdata[DimSize(wvXdata, 0) - 1]) / 2) // pure magic
 		wavOutput[0][%height] = V_max
 		peaksFound = 1
 	endif
