@@ -129,9 +129,7 @@ Function/WAVE GaussCoefToPeakParam(wvCoef, [wvCovar, verbose])
 
 	numPeaks = DimSize(wvPeakParam, 0)
 	if(verbose && (numPeaks > 0))
-		if(verbose > 1)
-			printf "method \tnr \tlocation \theight \tFWHM \t\tarea\r"
-		endif
+		printf "method \tnr \tlocation \theight \tFWHM \t\tarea\r"
 		for(i = 0; i < numPeaks; i += 1)
 			WAVE peakParam = wvPeakParam[i]
 			location = peakParam[0][0]
