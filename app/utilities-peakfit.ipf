@@ -705,8 +705,13 @@ End
 Function/WAVE RemoveSpikes(wv)
 	WAVE wv
 
+	variable numSmooth = 7
+	if(DimSize(wv, 0) < 7)
+		numSmooth = DimSize(wv, 0) /2
+	endif
+
 	Duplicate/FREE wv spikefree
-	Smooth/M=0.01 7, spikefree
+	Smooth/M=0.01 numSmooth, spikefree
 
 	return spikefree
 End
