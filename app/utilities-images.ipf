@@ -90,7 +90,7 @@ End
 //                   for Experiment.pxp the naming pattern is given by Experiment_customName.[png|pxp]
 //                   Leave blank to get Experiment
 // @param savePXP    save the graph window using SaveGraphCopy
-static Function saveWindow(win, [customName, savePXP])
+Function saveWindow(win, [customName, savePXP])
 	String win, customName
 	Variable savePXP
 
