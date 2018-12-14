@@ -1,7 +1,7 @@
+#pragma IndependentModule= Utilities
+
 #pragma TextEncoding = "UTF-8"
 #pragma rtGlobals=3
-
-#pragma IndependentModule = Utilities
 
 Function/WAVE getTopWindowImage()
 	String topWindowImages =	ImageNameList("",";")
