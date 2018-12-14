@@ -3,7 +3,7 @@
 #pragma TextEncoding = "UTF-8"
 #pragma rtGlobals=3
 
-static Function/WAVE getTopWindowImage()
+Function/WAVE getTopWindowImage()
 	String topWindowImages =	ImageNameList("",";")
 
 	if(ItemsInList(topWindowImages) == 0)
@@ -20,7 +20,7 @@ static Function/WAVE getTopWindowImage()
 	return image
 End
 
-static Function/WAVE getTopWindowWave()
+Function/WAVE getTopWindowWave()
 	string itemName, itemsList
 	Variable numItems
 
@@ -44,7 +44,7 @@ static Function/WAVE getTopWindowWave()
 End
 
 // set the (0,0) position within an image to the cursor position
-static Function SetScaleToCursor()
+Function SetScaleToCursor()
 	Variable offsetX, offsetY, aExists
 
 	WAVE/Z image = getTopWindowImage()
@@ -67,7 +67,7 @@ End
 // rescale wave offset in x and y dimension
 //
 // @param [optional] specify whether the offset should be relative to the current offset or absolute
-static Function AddWaveScaleOffset(wv, offsetX, offsetY, [relative])
+Function AddWaveScaleOffset(wv, offsetX, offsetY, [relative])
 	WAVE wv
 	Variable offsetX, offsetY
 	Variable relative
