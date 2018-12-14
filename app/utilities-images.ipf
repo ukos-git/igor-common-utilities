@@ -113,6 +113,7 @@ Function saveWindow(win, [customName, savePXP])
 	else
 		if(strlen(customName) > 0)
 			basename += "_"
+		else
 			savePXP = 0
 		endif
 		baseName += customName
