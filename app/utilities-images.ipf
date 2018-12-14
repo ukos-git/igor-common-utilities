@@ -82,3 +82,49 @@ static Function AddWaveScaleOffset(wv, offsetX, offsetY, [relative])
 		SetScale/P y, - offsetY, DimDelta(wv, 1), wv
 	endif
 End
+
+// save the graph window as png and as pxp
+//
+// @param win        name of graph as string
+// @param customName [optional, default=win] name for output graph file.
+//                   for Experiment.pxp the naming pattern is given by Experiment_customName.[png|pxp]
+//                   Leave blank to get Experiment
+// @param savePXP    save the graph window using SaveGraphCopy
+static Function saveWindow(win, [customName, savePXP])
+	String win, customName
+	Variable savePXP
+
+	String expName, baseName
+	Variable error = 0
+
+	if(ParamIsDefault(savePXP))
+		savePXP = 0
+	endif
+
+	DoWindow $win
+	if(!V_flag)
+		print "saveWindow: No such window: " + win
+		return 1
+	endif
+
+	baseName = IgorInfo(1)
+	if(ParamIsDefault(customName))
+		baseName += "_" + win
+	else
+		if(strlen(customName) > 0)
+			basename += "_"
+			savePXP = 0
+		endif
+		baseName += customName
+	endif
+
+	SavePICT/Z/WIN=$win/O/P=home/E=-5/B=288 as baseName + ".png"
+	error = error | V_flag
+
+	if(savePXP)
+		SaveGraphCopy/Z/W=$win/O/P=home as baseName + ".pxp"
+		error = error | V_flag
+	endif
+
+	return error
+End
