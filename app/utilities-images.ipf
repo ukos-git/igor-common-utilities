@@ -90,15 +90,18 @@ End
 //                   for Experiment.pxp the naming pattern is given by Experiment_customName.[png|pxp]
 //                   Leave blank to get Experiment
 // @param savePXP    save the graph window using SaveGraphCopy
-Function saveWindow(win, [customName, savePXP])
+Function saveWindow(win, [customName, savePXP, saveIBW])
 	String win, customName
-	Variable savePXP
+	Variable savePXP, saveIBW
 
 	String expName, baseName
 	Variable error = 0
 
 	if(ParamIsDefault(savePXP))
 		savePXP = 0
+	endif
+	if(ParamIsDefault(saveIBW))
+		saveIBW = 0
 	endif
 
 	DoWindow $win
@@ -125,6 +128,20 @@ Function saveWindow(win, [customName, savePXP])
 	if(savePXP)
 		SaveGraphCopy/Z/W=$win/O/P=home as baseName + ".pxp"
 		error = error | V_flag
+	endif
+
+	if(saveIBW)
+		String imageList = ImageNameList(win, ";")
+		WAVE/T images = ListtoTextWave(imageList, ";")
+		Make/FREE/WAVE/N=(DimSize(images, 0)) waves = ImageNameToWaveRef(win, images[p])
+
+		if(DimSize(waves, 0) == 0)
+			String traceList = TraceNameList(win, ";", 0x001)
+			WAVE/T traces = ListtoTextWave(traceList, ";")
+			Make/FREE/WAVE/N=(DimSize(traces, 0)) waves = TraceNameToWaveRef(win, traces[p])
+		endif
+
+		Save/C/O/P=home waves[0] as baseName + ".ibw"
 	endif
 
 	return error
