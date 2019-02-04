@@ -146,3 +146,12 @@ Function saveWindow(win, [customName, savePXP, saveIBW])
 
 	return error
 End
+
+Function SaveWindows()
+	String windows = WinList("*", ";", "WIN:1;VISIBLE:1")
+	Variable i, numWindows = ItemsInList(windows)
+	
+	for(i = 0; i < numWindows; i += 1)
+		SaveWindow(StringFromList(i, windows))
+	endfor
+End
