@@ -1,8 +1,5 @@
-#pragma IndependentModule= Utilities
 #pragma TextEncoding = "UTF-8"
 #pragma rtGlobals=3
-
-#pragma IndependentModule = Utilities
 
 // return a concatenated list
 Function/S ConcatenateLists(list1, list2)

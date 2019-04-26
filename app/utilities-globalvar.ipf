@@ -1,8 +1,5 @@
-#pragma IndependentModule= Utilities
 #pragma TextEncoding = "UTF-8"
 #pragma rtGlobals=3
-
-#pragma IndependentModule = Utilities
 
 // create/load and save functions from FILO (igor-file-loader)
 // https://github.com/ukos-git/igor-file-loader

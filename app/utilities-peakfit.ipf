@@ -1,8 +1,5 @@
-#pragma IndependentModule= Utilities
 #pragma TextEncoding = "UTF-8"
 #pragma rtGlobals=3
-
-#pragma IndependentModule = Utilities
 
 #include <Peak Functions>
 #include <PeakFunctions2>
@@ -271,9 +268,9 @@ Function/WAVE BuildCoefWv(wv, [wvXdata, peaks, verbose, dfr])
 	// use peakFind for parameters
 	if(ParamIsDefault(peaks))
 		if(ParamIsDefault(wvXdata))
-			WAVE peaks = Utilities#PeakFind(wv, verbose = verbose)
+			WAVE peaks = PeakFind(wv, verbose = verbose)
 		else
-			WAVE peaks = Utilities#PeakFind(wv, wvXdata = wvXdata, verbose = verbose)
+			WAVE peaks = PeakFind(wv, wvXdata = wvXdata, verbose = verbose)
 		endif
 	endif
 
@@ -646,7 +643,7 @@ Function/WAVE RemovePeaks(wv, [wvXdata, tolerance, verbose])
 	numPeaks = Dimsize(wavMaxima, 0)
 	Make/FREE/N=(numPeaks) peaksX = wavMaxima[p][%location]
 	Make/FREE/N=(numPeaks) peaksY = wavMaxima[p][%positionY]
-	Make/FREE/N=(numPeaks) peaksF = Utilities#CalculateFWHM(wavMaxima[p][%fwhm])
+	Make/FREE/N=(numPeaks) peaksF = CalculateFWHM(wavMaxima[p][%fwhm])
 	Sort peaksX, peaksX, peaksY, peaksF
 
 	// remove peaks
@@ -718,12 +715,12 @@ Function/WAVE RemoveBackground(wv, [wvXdata])
 	WAVE wv, wvXdata
 
 	if(ParamIsDefault(wvXdata))
-		WAVE nopeaks = Utilities#RemovePeaks(wv)
+		WAVE nopeaks = RemovePeaks(wv)
 	else
-		WAVE nopeaks = Utilities#RemovePeaks(wv, wvXdata = wvXdata)
+		WAVE nopeaks = RemovePeaks(wv, wvXdata = wvXdata)
 	endif
 
-	WAVE smoothed = Utilities#SmoothBackground(nopeaks)
+	WAVE smoothed = SmoothBackground(nopeaks)
 
 	Duplicate/FREE smoothed, nobackground
 	nobackground = wv - smoothed
