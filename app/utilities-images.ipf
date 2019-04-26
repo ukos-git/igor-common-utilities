@@ -156,3 +156,63 @@ Function SaveWindows()
 		SaveWindow(StringFromList(i, windows))
 	endfor
 End
+
+// Call a function named export() before quitting the experiment.
+//
+// from https://github.com/byte-physics/igor-unit-testing-framework/blob/master/procedures/unit-testing-autorun.ipf
+// Copyright 2013-2017 byte physics and contributors
+// {
+
+// automatically call the function export() after startup
+// close hook would not be working together with Quit/N right now
+static Function AfterFileOpenHook(refNum, file, pathName, type, creator, kind)
+	variable refNum, kind
+	string file, pathName, type, creator
+>>>>>>> cfcdadd... fixup de58fda9ab7da0a2c202bfb5df55712b714db43b
+
+	string funcList
+	variable err
+	
+	if(!AutorunMode())
+		return 0
+	endif
+
+	funcList = FunctionList("export", ";", "KIND:2,NPARAMS:0,WIN:[ProcGlobal]")
+	if(ItemsInList(funcList) == 1)
+		FuncRef PROTO_EXPORT f = $StringFromList(0, funcList)
+		err = GetRTError(1)
+		try
+			f(); AbortOnRTE
+		catch
+			err = GetRTError(1)
+			print "The export() function aborted with an RTE."
+		endtry
+	else
+		try
+			SaveWindows(); AbortOnRTE
+		catch
+			err = GetRTError(1)
+			print "The export() function aborted with an RTE."
+		endtry
+		
+	endif
+
+	Execute/P/Q "QUIT/N"
+End
+
+Function PROTO_EXPORT()
+End
+
+/// Return 1 if in outrun mode
+Function AutorunMode()
+	string baseName = IgorInfo(1)
+	GetFileFolderInfo/Q/Z/P=home baseName + ".autorun"
+
+	if(!V_flag)
+		return 1
+	endif
+
+	return 0
+End
+
+// }
