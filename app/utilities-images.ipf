@@ -88,9 +88,9 @@ End
 //                   for Experiment.pxp the naming pattern is given by Experiment_customName.[png|pxp]
 //                   Leave blank to get Experiment
 // @param savePXP    save the graph window using SaveGraphCopy
-Function saveWindow(win, [customName, savePXP, saveIBW, path])
+Function saveWindow(win, [customName, saveImages, savePXP, saveIBW, path])
 	String win, customName, path
-	Variable savePXP, saveIBW
+	Variable saveImages, savePXP, saveIBW
 
 	String expName, baseName
 	Variable error = 0
@@ -103,6 +103,9 @@ Function saveWindow(win, [customName, savePXP, saveIBW, path])
 	endif
 	if(ParamIsDefault(path))
 		path = "home"
+	endif
+	if(ParamIsDefault(saveImages))
+		saveImages = 1
 	endif
 
 	DoWindow $win
@@ -123,8 +126,14 @@ Function saveWindow(win, [customName, savePXP, saveIBW, path])
 		baseName += customName
 	endif
 
-	SavePICT/Z/WIN=$win/O/P=$path/E=-5/B=288 as baseName + ".png"
-	error = error | V_flag
+	if(saveImages)
+		SavePICT/Z/WIN=$win/O/P=$path/E=-5/B=288 as baseName + ".png"
+		error = error | V_flag
+		SavePICT/Z/WIN=$win/O/P=$path/E=-8/B=288 as baseName + ".pdf"
+		error = error | V_flag
+		SavePICT/Z/WIN=$win/O/P=$path/E=-9/B=288 as baseName + ".svg"
+		error = error | V_flag
+	endif
 
 	if(savePXP)
 		SaveGraphCopy/Z/W=$win/O/P=$path as baseName + ".pxp"
