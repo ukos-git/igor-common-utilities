@@ -1,6 +1,9 @@
 #pragma TextEncoding = "UTF-8"
 #pragma rtGlobals=3
 
+// from https://github.com/plotly/Igor-Pro-Graph-Converter
+#include "PlotlyFunctions"
+
 Function/WAVE getTopWindowImage()
 	String topWindowImages =	ImageNameList("",";")
 
@@ -88,9 +91,9 @@ End
 //                   for Experiment.pxp the naming pattern is given by Experiment_customName.[png|pxp]
 //                   Leave blank to get Experiment
 // @param savePXP    save the graph window using SaveGraphCopy
-Function saveWindow(win, [customName, saveImages, savePXP, saveIBW, path])
+Function saveWindow(win, [customName, saveImages, savePXP, saveIBW, saveJSON, path])
 	String win, customName, path
-	Variable saveImages, savePXP, saveIBW
+	Variable saveImages, savePXP, saveIBW, saveJSON
 
 	String expName, baseName
 	Variable error = 0
@@ -103,6 +106,9 @@ Function saveWindow(win, [customName, saveImages, savePXP, saveIBW, path])
 	endif
 	if(ParamIsDefault(path))
 		path = "home"
+	endif
+	if(ParamIsDefault(saveJSON))
+		saveJSON = 1
 	endif
 	if(ParamIsDefault(saveImages))
 		saveImages = 1
@@ -152,6 +158,10 @@ Function saveWindow(win, [customName, saveImages, savePXP, saveIBW, path])
 		endif
 
 		Save/C/O/P=$path waves[0] as baseName + ".ibw"
+	endif
+
+	if(saveJSON)
+		Graph2Plotly(graph = win, output = basename + ".json")
 	endif
 
 	return error
