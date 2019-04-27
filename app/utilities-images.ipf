@@ -168,7 +168,6 @@ End
 static Function AfterFileOpenHook(refNum, file, pathName, type, creator, kind)
 	variable refNum, kind
 	string file, pathName, type, creator
->>>>>>> cfcdadd... fixup de58fda9ab7da0a2c202bfb5df55712b714db43b
 
 	string funcList
 	variable err
