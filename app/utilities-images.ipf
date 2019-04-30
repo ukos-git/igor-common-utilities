@@ -3,7 +3,7 @@
 #include "utilities-lists"
 
 // from https://github.com/plotly/Igor-Pro-Graph-Converter
-#include "PlotlyFunctions"
+#include "Plotly"
 
 Function/WAVE getTopWindowImage()
 	String topWindowImages =	ImageNameList("",";")
@@ -162,7 +162,7 @@ Function saveWindow(win, [customName, saveImages, savePXP, saveIBW, saveJSON, pa
 	endif
 
 	if(saveJSON)
-		Graph2Plotly(graph = win, output = basename + ".json")
+		Graph2Plotly(graph = win, output = basename + ".json", skipSend = 1, writeFile = 1)
 	endif
 
 	return error
