@@ -92,9 +92,9 @@ End
 //                   for Experiment.pxp the naming pattern is given by Experiment_customName.[png|pxp]
 //                   Leave blank to get Experiment
 // @param savePXP    save the graph window using SaveGraphCopy
-Function saveWindow(win, [customName, saveImages, savePXP, saveIBW, saveJSON, path])
+Function saveWindow(win, [customName, saveImages, savePNG, saveSVG, savePXP, saveIBW, saveJSON, path])
 	String win, customName, path
-	Variable saveImages, savePXP, saveIBW, saveJSON
+	Variable saveImages, savePXP, saveIBW, saveJSON, savePNG, saveSVG
 
 	String expName, baseName
 	Variable error = 0
@@ -111,8 +111,15 @@ Function saveWindow(win, [customName, saveImages, savePXP, saveIBW, saveJSON, pa
 	if(ParamIsDefault(saveJSON))
 		saveJSON = 1
 	endif
+	if(ParamIsDefault(savePNG))
+		savePNG = 1
+	endif
+	if(ParamIsDefault(saveSVG))
+		saveSVG = 1
+	endif	
 	if(ParamIsDefault(saveImages))
-		saveImages = 1
+		savePNG = 1
+		saveSVG = 1
 	endif
 
 	DoWindow $win
@@ -133,9 +140,11 @@ Function saveWindow(win, [customName, saveImages, savePXP, saveIBW, saveJSON, pa
 		baseName += customName
 	endif
 
-	if(saveImages)
+	if(savePNG)
 		SavePICT/Z/WIN=$win/O/P=$path/E=-5/B=288 as baseName + ".png"
 		error = error | V_flag
+	endif
+	if(saveSVG)
 		SavePICT/Z/WIN=$win/O/P=$path/E=-9/B=288 as baseName + ".svg"
 		error = error | V_flag
 	endif
