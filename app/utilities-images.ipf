@@ -136,8 +136,6 @@ Function saveWindow(win, [customName, saveImages, savePXP, saveIBW, saveJSON, pa
 	if(saveImages)
 		SavePICT/Z/WIN=$win/O/P=$path/E=-5/B=288 as baseName + ".png"
 		error = error | V_flag
-		SavePICT/Z/WIN=$win/O/P=$path/E=-8/B=288 as baseName + ".pdf"
-		error = error | V_flag
 		SavePICT/Z/WIN=$win/O/P=$path/E=-9/B=288 as baseName + ".svg"
 		error = error | V_flag
 	endif
