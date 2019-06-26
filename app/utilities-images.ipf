@@ -180,7 +180,7 @@ Function SaveWindows()
 	Variable i, numWindows = ItemsInList(windows)
 	
 	for(i = 0; i < numWindows; i += 1)
-		SaveWindow(StringFromList(i, windows))
+		SaveWindow(StringFromList(i, windows), saveJSON = 0, saveImages = 1, saveSVG = 0)
 	endfor
 End
 
