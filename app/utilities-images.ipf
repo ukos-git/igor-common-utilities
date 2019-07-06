@@ -175,8 +175,10 @@ Function saveWindow(win, [customName, saveImages, savePNG, saveSVG, savePXP, sav
 	return error
 End
 
-Function SaveWindows()
-	String windows = WinList("*", ";", "WIN:1;VISIBLE:1")
+Function SaveWindows(match)
+	String match
+
+	String windows = WinList(match, ";", "WIN:1;VISIBLE:1")
 	Variable i, numWindows = ItemsInList(windows)
 	
 	for(i = 0; i < numWindows; i += 1)
@@ -215,7 +217,7 @@ static Function AfterFileOpenHook(refNum, file, pathName, type, creator, kind)
 		endtry
 	else
 		try
-			SaveWindows(); AbortOnRTE
+			SaveWindows("*"); AbortOnRTE
 		catch
 			err = GetRTError(1)
 			print "The export() function aborted with an RTE."
