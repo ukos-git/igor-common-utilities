@@ -70,13 +70,9 @@ Function/Wave PeakFind(wavInput, [wvXdata, noiselevel, smoothingFactor, minPeakP
 	pBegin = 0
 	pEnd = DimSize(wvYdata, 0) - 1
 
-	try
-		estimates = EstPeakNoiseAndSmfact(wvYdata, pBegin, pEnd)
-	catch
-		estimates = cmplx(0.01, 1)
-	endtry
-	noiselevel = noiselevel * real(estimates)
-	smoothingFactor = smoothingFactor * imag(estimates)
+	WaveStats/Q wvYdata
+	noiselevel = noiselevel * V_adev
+	smoothingFactor = smoothingFactor * round(DimSize(wvYdata, 0) / 128)
 
 	peaksFound = AutoFindPeaksNew(wvYdata, pBegin, pEnd, noiseLevel, smoothingFactor, maxPeaks)
 	WAVE W_AutoPeakInfo // output of AutoFindPeaksNew
