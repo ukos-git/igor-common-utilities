@@ -700,7 +700,11 @@ End
 Function/WAVE RemoveSpikes(wv)
 	WAVE wv
 
-	variable numSmooth = max(7, round(DimSize(wv, 0) / 64))
+	if(DimSize(wv,0) < 3)
+		return wv
+	endif
+
+	variable numSmooth = round(max(min(7, DimSize(wv,0)), DimSize(wv, 0) / 64))
 	variable threshold = 0.01
 
 	Duplicate/FREE wv spikefree
