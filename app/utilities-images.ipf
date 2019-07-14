@@ -6,7 +6,7 @@
 #include "Plotly"
 
 Function/WAVE getTopWindowImage()
-	String topWindowImages =	ImageNameList("",";")
+	String topWindowImages = ImageNameList("",";")
 
 	if(ItemsInList(topWindowImages) == 0)
 		print "Utilities#getTopWindowImage: no Image found in top graph"
@@ -26,8 +26,8 @@ Function/WAVE getTopWindowWave()
 	string itemName, itemsList
 	Variable numItems
 
-	String topWindowImages =	ImageNameList("", ";")
-	String topWindowTraces =	TraceNameList("", ";", 1)
+	String topWindowImages = ImageNameList("", ";")
+	String topWindowTraces = TraceNameList("", ";", 1)
 	Variable numImages = ItemsInList(topWindowImages)
 
 	itemsList = ConcatenateLists(topWindowImages, topWindowTraces)
@@ -116,7 +116,7 @@ Function saveWindow(win, [customName, saveImages, savePNG, saveSVG, savePXP, sav
 	endif
 	if(ParamIsDefault(saveSVG))
 		saveSVG = 1
-	endif	
+	endif
 	if(ParamIsDefault(saveImages))
 		savePNG = 1
 		saveSVG = 1
@@ -180,7 +180,7 @@ Function SaveWindows(match)
 
 	String windows = WinList(match, ";", "WIN:1;VISIBLE:1")
 	Variable i, numWindows = ItemsInList(windows)
-	
+
 	for(i = 0; i < numWindows; i += 1)
 		SaveWindow(StringFromList(i, windows), saveJSON = 0, saveImages = 1, saveSVG = 0)
 	endfor
@@ -200,7 +200,7 @@ static Function AfterFileOpenHook(refNum, file, pathName, type, creator, kind)
 
 	string funcList
 	variable err
-	
+
 	if(!AutorunMode())
 		return 0
 	endif
@@ -222,7 +222,7 @@ static Function AfterFileOpenHook(refNum, file, pathName, type, creator, kind)
 			err = GetRTError(1)
 			print "The export() function aborted with an RTE."
 		endtry
-		
+
 	endif
 
 	Execute/P/Q "QUIT/N"
