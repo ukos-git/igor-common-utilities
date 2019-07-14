@@ -11,7 +11,15 @@ Function lap(timerRefNum, prefix)
 		resetTimer()
 	endif
 	elapsed = StopMSTimer(timerRefNum)
-	Printf "%s: \t%9.3f ms\r", prefix, elapsed / 1e3
+	if(elapsed < 1e6)
+		printf "%s: \t%9.3f ms\r", prefix, elapsed / 1e3
+	elseif(elapsed < 60e6)
+		printf "%s: \t%9.3f s\r", prefix, elapsed / 1e6
+	elseif(elapsed < 3600e6)
+		printf "%s: \t%9.3f min\r", prefix, elapsed / 1e6 / 60
+	else
+		printf "%s: \t%9.3f h\r", prefix, elapsed / 1e6 / 3600
+	endif
 	timerRefNum = StartMSTimer
 End
 
