@@ -704,22 +704,24 @@ Function/WAVE RemoveSpikes(wv)
 		return wv
 	endif
 
-	variable numSmooth = round(max(min(7, DimSize(wv,0)), DimSize(wv, 0) / 64))
+	variable numSmooth, minSmooth = 3
 	variable threshold = 0.01
 
 	Duplicate/FREE wv spikefree
 	if(DimSize(wv, 1) > 1)
-		MatrixFilter/P=2/N=2 median spikefree
-
-		ImageStats wv
-		Smooth/M=(V_adev)/DIM=0 numSmooth, spikefree
-
-		numSmooth = max(3, round(DimSize(wv, 1) / 64))
+		numSmooth = max(minSmooth, round(DimSize(wv, 1) / 64))
 		ImageStats spikefree
 		Smooth/M=(V_adev)/DIM=1 numSmooth, spikefree
+
+		numSmooth = max(minSmooth, round(DimSize(wv, 0) / 64))
+		ImageStats spikefree
+		Smooth/M=(V_adev)/DIM=0 numSmooth, spikefree
+
+		MatrixFilter/P=2/N=2 median spikefree
 	else
-		WaveStats/Q wv
 		Redimension/N=(-1,0) spikefree
+		numSmooth = max(minSmooth, round(DimSize(wv, 0) / 64))
+		WaveStats/Q wv
 		Smooth/M=(V_adev) numSmooth, spikefree
 	endif
 
