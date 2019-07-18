@@ -176,3 +176,31 @@ Function/Wave SmoothWave(wavInput, numSmooth)
 
 	return wavOutput
 End
+
+// @brief find @p level in @p wv and return point range from @p pStart to @p pEnd
+Function [ Variable pStart, Variable pEnd ] FindLevelWrapper(WAVE wv, Variable level, [Variable accuracy, Variable verbose])
+
+	verbose = ParamIsDefault(verbose) ? 0 : !!verbose
+
+	if(DimSize(wv, 0) < accuracy)
+		pStart = 0
+		pEnd = DimSize(wv, 0) - 1
+		return [ pStart, pEnd ]
+	endif
+
+	FindLevel/Q/P/T=(accuracy) wv, level
+	pStart = V_Flag ? 0 : floor(V_levelX)
+	pEnd = V_Flag ? DimSize(wv, 0) - 1 : ceil(V_levelX)
+	if(verbose)
+		printf "level found between %d and %d in wave %s\r", pStart, pEnd, NameOfWave(wv)
+	endif
+	if(ParamIsDefault(accuracy))
+		return [ pStart, pEnd ]
+	endif
+	do
+		pStart = max(0, pStart - 1)
+		pEnd = min(pEnd + 1, DimSize(wv, 0) - 1)
+	while((pEnd - pStart) < accuracy)
+
+	return [ pStart, pEnd ]
+End
