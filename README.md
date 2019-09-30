@@ -1,3 +1,5 @@
+![compile status](https://gitlab.com/ukos-git/igor-common-utilities/badges/master/pipeline.svg)
+
 # igor-common-utilities
 some functions that are used all over my igor programs
 
@@ -8,4 +10,4 @@ Designed for use in "User Procedures" folder.
 Functions live in a submodule called Utilities. Call them by using Utilities#
 
 # developement
-currently under heavy developement without feature branch. please contact me if you want to collaborate!
+feature branch system
