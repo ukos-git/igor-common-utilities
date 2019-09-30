@@ -1,0 +1,3 @@
+[submodule "vendor/plotly"]
+	path = vendor/plotly
+	url = https://github.com/plotly/Igor-Pro-Graph-Converter.git
