@@ -89,8 +89,6 @@ End
 //
 // @param win        name of graph as string
 // @param customName [optional, default=win] name for output graph file.
-//                   for Experiment.pxp the naming pattern is given by Experiment_customName.[png|pxp]
-//                   Leave blank to get Experiment
 // @param savePXP    save the graph window using SaveGraphCopy
 Function saveWindow(win, [customName, saveImages, saveVector, savePXP, saveIBW, saveJSON, path])
 	String win, customName, path
@@ -125,16 +123,15 @@ Function saveWindow(win, [customName, saveImages, saveVector, savePXP, saveIBW, 
 		return 1
 	endif
 
-	baseName = IgorInfo(1)
+	baseName = ""
 	if(ParamIsDefault(customName))
-		baseName += "_" + win
+		baseName += win
 	else
-		if(strlen(customName) > 0)
-			basename += "_"
+		if(strlen(customName) == 0)
+			baseName = IgorInfo(1)
 		else
-			savePXP = 0
+			baseName += customName
 		endif
-		baseName += customName
 	endif
 
 	if(saveImages)
