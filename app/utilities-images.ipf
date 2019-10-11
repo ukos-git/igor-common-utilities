@@ -157,12 +157,11 @@ Function saveWindow(win, [customName, saveImages, saveUXP, saveVector, savePXP, 
 	endif
 
 	if(saveImages)
-		SavePICT/Z/WIN=$win/O/P=$path/E=-5/B=288 as baseName + ".png"
+		SavePICT/Z/WIN=$win/O/P=$path/E=-5/RES=300/TRAN=1 as baseName + ".png"
 		error = error | V_flag
 	endif
 	if(saveVector)
-		SavePICT/Z/WIN=$win/O/P=$path/E=-9/B=288 as baseName + ".svg"
-		SavePICT/Z/WIN=$win/O/P=$path/E=-3/S/B=288 as baseName + ".eps"
+		SavePICT/Z/WIN=$win/O/P=$path/EF=1/E=-8 as baseName + ".pdf"
 		error = error | V_flag
 	endif
 
