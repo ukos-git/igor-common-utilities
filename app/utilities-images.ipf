@@ -90,21 +90,43 @@ End
 // @param win        name of graph as string
 // @param customName [optional, default=win] name for output graph file.
 // @param savePXP    save the graph window using SaveGraphCopy
-Function saveWindow(win, [customName, saveImages, saveVector, savePXP, saveIBW, saveJSON, path])
+Function saveWindow(win, [customName, saveImages, saveUXP, saveVector, saveTiff, savePXP, saveIBW, saveJSON, path])
 	String win, customName, path
-	Variable saveImages, savePXP, saveIBW, saveJSON, saveVector
+	Variable saveImages, savePXP, saveUXP, saveIBW, saveJSON, saveVector, saveTiff
 
 	String expName, baseName
+	Variable refNum
 	Variable error = 0
 
+// graph storage subfolder system similar to uxp with packed experiments
+#ifdef IMAGES_EXPORT_PXP
+	savePXP = 1
+	PathInfo home
+	NewPath/C/O/Q/Z saveImagesPath, (S_path + IgorInfo(1))
+#else
 	if(ParamIsDefault(savePXP))
 		savePXP = 0
+	endif
+#endif
+
+	if(ParamIsDefault(saveUXP))
+		saveUXP = 0
+	endif
+	if(saveUXP)
+		customName = ""
+		win = "kwTopWin" // can not save individual graphs
+		saveImages = 0
 	endif
 	if(ParamIsDefault(saveIBW))
 		saveIBW = 0
 	endif
 	if(ParamIsDefault(path))
-		path = "home"
+		path = "saveImagesPath"
+		PathInfo $path
+		if(!V_flag) // workaround for UXP experiments
+			PathInfo home
+			NewPath/C/O/Q/Z saveImagesPath, S_path
+		endif
 	endif
 	if(ParamIsDefault(saveJSON))
 		saveJSON = 0
@@ -115,10 +137,13 @@ Function saveWindow(win, [customName, saveImages, saveVector, savePXP, saveIBW, 
 	if(ParamIsDefault(saveVector))
 		saveVector = 0
 	endif
+	if(ParamIsDefault(saveTiff))
+		saveTiff = 0
+	endif
 
 
 	DoWindow $win
-	if(!V_flag)
+	if(!V_flag && !saveUXP)
 		print "saveWindow: No such window: " + win
 		return 1
 	endif
@@ -135,18 +160,41 @@ Function saveWindow(win, [customName, saveImages, saveVector, savePXP, saveIBW, 
 	endif
 
 	if(saveImages)
-		SavePICT/Z/WIN=$win/O/P=$path/E=-5/B=288 as baseName + ".png"
+		SavePICT/Z/WIN=$win/O/P=$path/E=-5/RES=300/TRAN=1 as baseName + ".png"
+		error = error | V_flag
+	endif
+	if(saveTiff)
+		SavePICT/Z/WIN=$win/O/P=$path/E=-7 as baseName + ".tif"
 		error = error | V_flag
 	endif
 	if(saveVector)
-		SavePICT/Z/WIN=$win/O/P=$path/E=-9/B=288 as baseName + ".svg"
-		SavePICT/Z/WIN=$win/O/P=$path/E=-3/S/B=288 as baseName + ".eps"
+		SavePICT/Z/WIN=$win/O/P=$path/EF=1/E=-8 as baseName + ".pdf"
 		error = error | V_flag
 	endif
 
 	if(savePXP)
 		SaveGraphCopy/Z/W=$win/O/P=$path as baseName + ".pxp"
 		error = error | V_flag
+		Execute/Q/P ("DoWindow/R " + win)
+		Open/T="TEXT"/P=$path/Z refNum as "Procedure.ipf"
+		FStatus refNum
+		if(V_flag)
+			String procText = ReplaceString("\r", ProcedureText("", 0, "Procedure"), "\n") + "\n"
+			FBinWrite refNum, procText
+			Close refNum
+		endif
+		Open/P=$path/Z refNum as "history"
+		FStatus refNum
+		if(V_flag)
+			Close refNum
+			DoWindow/K HistoryCarbonCopy
+			NewNotebook/V=0/F=0/N=HistoryCarbonCopy
+			SaveNoteBook/O/S=3/P=$path HistoryCarbonCopy as "history"
+		endif
+	endif
+
+	if(saveUXP)
+		SaveExperiment/P=$path/C/F={0, baseName, 2} as (baseName + ".uxp")
 	endif
 
 	if(saveIBW)
@@ -164,7 +212,8 @@ Function saveWindow(win, [customName, saveImages, saveVector, savePXP, saveIBW, 
 	endif
 
 	if(saveJSON)
-		Graph2Plotly(graph = win, output = basename + ".json", skipSend = 1, writeFile = 1)
+		PathInfo $path
+		Graph2Plotly(graph = win, output = S_path + basename + ".json", skipSend = 1, writeFile = 1)
 	endif
 
 	return error
