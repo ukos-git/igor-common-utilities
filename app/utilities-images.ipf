@@ -90,9 +90,9 @@ End
 // @param win        name of graph as string
 // @param customName [optional, default=win] name for output graph file.
 // @param savePXP    save the graph window using SaveGraphCopy
-Function saveWindow(win, [customName, saveImages, saveUXP, saveVector, savePXP, saveIBW, saveJSON, path])
+Function saveWindow(win, [customName, saveImages, saveUXP, saveVector, saveTiff, savePXP, saveIBW, saveJSON, path])
 	String win, customName, path
-	Variable saveImages, savePXP, saveUXP, saveIBW, saveJSON, saveVector
+	Variable saveImages, savePXP, saveUXP, saveIBW, saveJSON, saveVector, saveTiff
 
 	String expName, baseName
 	Variable refNum
@@ -137,6 +137,9 @@ Function saveWindow(win, [customName, saveImages, saveUXP, saveVector, savePXP, 
 	if(ParamIsDefault(saveVector))
 		saveVector = 0
 	endif
+	if(ParamIsDefault(saveTiff))
+		saveTiff = 0
+	endif
 
 
 	DoWindow $win
@@ -158,6 +161,10 @@ Function saveWindow(win, [customName, saveImages, saveUXP, saveVector, savePXP, 
 
 	if(saveImages)
 		SavePICT/Z/WIN=$win/O/P=$path/E=-5/RES=300/TRAN=1 as baseName + ".png"
+		error = error | V_flag
+	endif
+	if(saveTiff)
+		SavePICT/Z/WIN=$win/O/P=$path/E=-7 as baseName + ".tif"
 		error = error | V_flag
 	endif
 	if(saveVector)
