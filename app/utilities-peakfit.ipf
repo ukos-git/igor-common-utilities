@@ -317,10 +317,10 @@ static Function/S BuildFitStringGauss(wvCoef)
 		WAVE coef = wvCoef[i]
 		myFunctions += "{MPFXGaussPeak, "
 		myFunctions += GetWavesDataFolder(coef, 2)
-		myFunctions += "}"
+		myFunctions += "},"
 	endfor
 
-	return myFunctions
+	return RemoveEnding(myFunctions, ",")
 End
 
 // assumes MPFXGaussPeak style peak parameter wave
