@@ -90,9 +90,11 @@ End
 // @param win        name of graph as string
 // @param customName [optional, default=win] name for output graph file.
 // @param savePXP    save the graph window using SaveGraphCopy
-Function saveWindow(win, [customName, saveImages, saveUXP, saveVector, saveTiff, savePXP, saveIBW, saveJSON, path])
+// @param rebuild    rebuild the graph from the saved function macro before saving it.
+Function saveWindow(win, [customName, saveImages, saveUXP, saveVector, saveTiff, savePXP, saveIBW, saveJSON, path, rebuild])
 	String win, customName, path
 	Variable saveImages, savePXP, saveUXP, saveIBW, saveJSON, saveVector, saveTiff
+	Variable rebuild
 
 	String expName, baseName
 	Variable refNum
@@ -101,11 +103,15 @@ Function saveWindow(win, [customName, saveImages, saveUXP, saveVector, saveTiff,
 // graph storage subfolder system similar to uxp with packed experiments
 #ifdef IMAGES_EXPORT_PXP
 	savePXP = 1
+	rebuild = 1
 	PathInfo home
 	NewPath/C/O/Q/Z saveImagesPath, (S_path + IgorInfo(1))
 #else
 	if(ParamIsDefault(savePXP))
 		savePXP = 0
+	endif
+	if(ParamIsDefault(rebuild))
+		rebuild = 0
 	endif
 #endif
 
@@ -143,9 +149,14 @@ Function saveWindow(win, [customName, saveImages, saveUXP, saveVector, saveTiff,
 
 
 	DoWindow $win
-	if(!V_flag && !saveUXP)
+	if(!V_flag && !saveUXP && !rebuild)
 		print "saveWindow: No such window: " + win
 		return 1
+	endif
+
+	if(rebuild)
+		KillWindow/Z $win
+		Execute "" + win + "()"
 	endif
 
 	baseName = ""
